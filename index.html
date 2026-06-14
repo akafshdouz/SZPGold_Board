@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>طلا و جواهرات صادق‌زاده</title>
+
+<style>
+@font-face { font-family: 'BArash'; src: url('barash.ttf') format('truetype'); }
+@font-face { font-family: 'BNazanin'; src: url('bnazanin.ttf') format('truetype'); }
+@font-face { font-family: 'BTitr'; src: url('btitr.ttf') format('truetype'); font-weight: bold; }
+
+:root {
+  --text-white: #ffffff;
+  --color-buy: #40ff00;    
+  --color-sell: #ff471a;   
+}
+
+body {
+  margin: 0; padding: 0;
+  background: url('bg.jpg') no-repeat center center fixed; background-size: cover;
+  color: var(--text-white); font-family: 'BNazanin', Tahoma, sans-serif;
+  height: 100vh; width: 100vw; box-sizing: border-box; overflow: hidden; 
+  display: flex; flex-direction: column; user-select: none; position: relative;
+}
+
+/* ساختار گرید سه بخش هدر تراز با مرکز مانیتور */
+header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  /* مقدار قبلی: padding: 0 4vw; */
+  /* مقدار جدید: تنظیم روی 2vw برای هماهنگی کامل با عریض شدن کارت‌ها */
+  padding: 0 2vw;
+  width: 100%; 
+  box-sizing: border-box;
+  min-height: 18vh;
+  position: relative;
+  z-index: 2;
+}
+
+/* وسط‌چین کردن کامل باکس زمان و تنظیم فاصله از سقف */
+.time-date-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;    
+  text-align: center;     
+  font-family: 'BArash', sans-serif;
+  margin-top: 12vh; 
+  margin-left: 35vh;
+}
+
+#live-time {
+  font-family: 'BTitr', sans-serif; 
+  font-size: clamp(35px, 5vh, 65px); 
+  font-weight: bold;
+  direction: ltr;
+  line-height: 1;
+}
+
+/* بزرگ‌تر کردن فونت تاریخ */
+#live-date {
+  font-family: 'BNazanin', sans-serif; 
+  font-size: clamp(22px, 3vh, 32px);
+  margin-top: 0.5vh;
+}
+
+.center-logo-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top:-2.5vh;
+}
+.center-logo-box img { 
+  max-height: 20vh; 
+  width: auto; 
+  object-fit: contain; 
+}
+
+.indicators-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2vh;
+  font-family: 'BNazanin', sans-serif;
+  font-size: clamp(18px, 4vh, 28px);
+  align-items: flex-end;
+}
+
+.ind-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8vw;
+}
+.ind-item span { text-align: left; }
+
+.ind-dot {
+  width: 2.4vh;
+  height: 2.4vh;
+  border-radius: 50%;
+  background-color: #ff4757;
+  box-shadow: 0 0 14px #ff4757;
+  transition: background 0.3s;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2vh; 
+  padding: 1vh 1vw 12vh 1vw;
+  flex-grow: 1;
+  box-sizing: border-box;
+  justify-content: space-between;
+  min-height: 0; 
+}
+
+/* بزرگ‌تر و خواناتر کردن نوار آخرین آپدیت قیمت‌ها */
+.currency-bar-attached {
+  width: 100%;
+  text-align: center;
+  font-family: 'BNazanin', sans-serif;
+  font-size: clamp(26px, 4.2vh, 48px);
+  color: #dfb76c;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+  font-weight: bold;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+}
+
+.top-row {
+  width: 100%;
+  height: 26vh; 
+  flex-shrink: 0;
+}
+.bottom-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1vw;
+  height: 40vh; 
+  flex-shrink: 0;
+}
+
+.card {
+  background: rgba(0, 0, 0, 0.75); 
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 2vh;
+  box-shadow: 0 1.5vh 3.5vh rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  display: flex;
+  position: relative;
+}
+
+.card.large-card {
+  /* پدینگ داخلی کارت طلا را کمی بیشتر می‌کنیم تا فضای داخل کارت بزرگ‌تر حس شود */
+  padding: 2vh 4vw; 
+  width: 100%;
+  height: 100%;
+  align-items: center;        
+  justify-content: space-between;
+}
+
+.card.small-card {
+  /* پدینگ داخلی کارت‌های سکه را هم از چپ و راست بازتر می‌کنیم */
+  padding: 1vh 2vw;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 100%;
+}
+.large-card .card-title {
+  font-family: 'BArash', sans-serif;
+  font-size: var(--lg-title-size, 7vh);
+  color: var(--text-white);
+  line-height: 1.1;
+  margin: 0;
+  padding-right: 2vw;
+  border-right: 0.5vh solid #dfb76c;
+  min-width: 20vw;
+}
+.small-card .card-title {
+  font-family: 'BArash', sans-serif;
+  font-size: var(--sm-title-size, 3.2vh);
+  color: var(--text-white);
+  text-align: center;
+  margin: 0;
+  padding-bottom: 0.5vh;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+  width: 100%;
+}
+
+.card-prices {
+  display: flex;
+  align-items: center; 
+}
+.large-card .card-prices {
+  gap: 6vw;
+  justify-content: flex-end;
+  height: 100%;
+}
+.small-card .card-prices {
+  flex-direction: column;
+  width: 100%;
+  gap: 3.5vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.price-block {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.large-card .price-block {
+  min-width: 24vw;
+  justify-content: flex-end;
+}
+.small-card .price-block {
+  width: 100%;
+}
+
+.price-value {
+  font-family: 'BTitr', sans-serif;
+  font-weight: bold;
+  white-space: nowrap;
+  letter-spacing: -1px;
+}
+.price-block.buy .price-value {
+  color: #40ff00 !important;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(64, 255, 0, 0.4);
+}
+.price-block.sell .price-value {
+  color: #ff471a !important;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 71, 26, 0.4);
+}
+
+.large-card .price-value { font-size: var(--lg-price-size, 10.5vh); }
+.small-card .price-value { font-size: var(--sm-price-size, 5vh); }
+
+.market-status-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10; border-radius: 2vh; border: 2px solid #e74c3c;
+  box-sizing: border-box; opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.market-status-card {
+  background: rgba(192, 41, 43, 0.95);
+  border: 1px solid #ff4d4d; padding: 15px 30px;
+  border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  text-align: center;
+}
+.market-status-text {
+  font-family: 'BTitr', sans-serif; font-size: 2.8vh; color: #ffffff; margin: 0;
+}
+
+#first-load-shutter {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.9); display: flex; align-items: center;
+  justify-content: center; z-index: 9999999;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.shutter-box {
+  border: 2px solid #dfb76c; background: rgba(0,0,0,0.7);
+  padding: 40px 80px; border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6); text-align: center;
+}
+.shutter-title { font-family: 'BTitr', sans-serif; font-size: 34px; color: #dfb76c; margin: 0 0 10px 0; }
+.shutter-sub { font-family: 'BNazanin', sans-serif; font-size: 22px; color: #ffffff; margin: 0; }
+
+.toast-alert {
+  position: fixed; bottom: 30px; right: 30px; background: #27ae60; color: white;
+  padding: 12px 24px; border-radius: 8px; font-family: 'BNazanin', sans-serif;
+  font-size: 1.8vh; font-weight: bold; z-index: 999999; opacity: 0;
+  transform: translateY(20px); transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* اصلاح کامل پاپ‌آپ تنظیمات به صورت پاپ‌آپ شناور روی تمام لایه‌ها */
+#inline-settings-panel {
+  display: none; 
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 650px;
+  max-width: 95vw;
+  background: rgba(20, 24, 30, 0.98);
+  border: 2px solid #dfb76c;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  z-index: 999999; 
+  box-sizing: border-box;
+}
+
+.counter-row-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 6px;
+  font-size: 13px; margin-bottom: 3px;
+}
+.stepper-control-box { display: flex; align-items: center; gap: 10px; }
+.stepper-btn {
+  background: #dfb76c; color: #000; border: none; width: 28px; height: 28px;
+  border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px;
+}
+.stepper-value-text { min-width: 60px; text-align: center; font-weight: bold; color: #fff; }
+
+.input-premium {
+  flex: 1;
+  background: #1e272e;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #ffffff;
+  font-family: Tahoma, sans-serif;
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.input-premium:focus {
+  border-color: #dfb76c;
+  box-shadow: 0 0 5px rgba(223, 183, 108, 0.3);
+}
+
+@media screen and (max-width: 1024px) {
+  body {
+    overflow-y: auto;
+    height: auto;
+  }
+  header {
+    grid-template-columns: 1fr;
+    gap: 2vh;
+    padding: 2vh 4vw;
+    text-align: center;
+  }
+  .time-date-box { align-items: center; text-align: center; margin-top: 0; }
+  .indicators-box { align-items: center; }
+  
+  .main-layout {
+    height: auto;
+    justify-content: flex-start;
+    gap: 4vh;
+  }
+  .top-row, .bottom-row {
+    height: auto;
+  }
+  
+  .bottom-row {
+    grid-template-columns: 1fr;
+    gap: 3vh;
+  }
+  
+  .card.large-card {
+    flex-direction: column;
+    gap: 3vh;
+    padding: 3vh;
+  }
+  .large-card .card-title {
+    border-right: none;
+    border-bottom: 3px solid #dfb76c;
+    padding-right: 0;
+    padding-bottom: 1vh;
+    width: 100%;
+    text-align: center;
+  }
+  .card-prices, .large-card .card-prices {
+    flex-direction: column;
+    gap: 3vh;
+    width: 100%;
+  }
+  .large-card .price-block, .small-card .price-block {
+    width: 100%;
+    justify-content: center;
+  }
+  .large-card .price-value { font-size: 6vh; }
+  .small-card .price-value { font-size: 5vh; }
+  
+  #inline-settings-panel {
+    width: 90% !important;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+</style>
+</head>
+<body>
+
+  <div id="first-load-shutter">
+    <div class="shutter-box">
+      <h2 class="shutter-title">گالری طلا و جواهرات صادق‌زاده</h2>
+      <p class="shutter-sub">در حال اتصال به قیمت ها ...</p>
+    </div>
+  </div>
+
+ <header>
+    <div class="time-date-box"> 
+      <div id="live-time">---</div>
+      <div id="live-date">---</div>
+    </div>
+
+    <div class="center-logo-box">
+      <img src="logo.png" alt="لوگو گالری صادق زاده">
+    </div>
+
+    <div class="indicators-box">
+      <div class="ind-item"><span>سرور</span><div class="ind-dot" id="server-dot"></div></div>
+      <div class="ind-item"><span>اینترنت</span><div class="ind-dot" id="internet-dot"></div></div>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <div class="currency-bar-attached">
+      <div id="update-timer">آخرین بروزرسانی قیمت‌ها: در حال بررسی...</div>
+    </div>
+
+    <div class="top-row">
+      <div class="card large-card">
+        <div id="gold-status-overlay" class="market-status-overlay">
+          <div class="market-status-card"><p class="market-status-text">معاملات طلا غیرفعال می‌باشد</p></div>
+        </div>
+        <h2 class="card-title">گرم ۱۸ عیار</h2>
+        <div class="card-prices">
+          <div class="price-block buy"><div class="price-value" id="gold_buy">---</div></div>
+          <div class="price-block sell"><div class="price-value" id="gold_sell">---</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="card small-card">
+        <div id="coin-status-overlay-1" class="market-status-overlay">
+          <div class="market-status-card"><p class="market-status-text">معاملات سکه غیرفعال می‌باشد</p></div>
+        </div>
+        <h2 class="card-title">تمام سکه امامی</h2>
+        <div class="card-prices">
+          <div class="price-block buy"><div class="price-value" id="full_buy">---</div></div>
+          <div class="price-block sell"><div class="price-value" id="full_sell">---</div></div>
+        </div>
+      </div>
+
+      <div class="card small-card">
+        <div id="coin-status-overlay-2" class="market-status-overlay">
+          <div class="market-status-card"><p class="market-status-text">معاملات سکه غیرفعال می‌باشد</p></div>
+        </div>
+        <h2 class="card-title">نیم سکه امامی</h2>
+        <div class="card-prices">
+          <div class="price-block buy"><div class="price-value" id="half_buy">---</div></div>
+          <div class="price-block sell"><div class="price-value" id="half_sell">---</div></div>
+        </div>
+      </div>
+
+      <div class="card small-card">
+        <div id="coin-status-overlay-3" class="market-status-overlay">
+          <div class="market-status-card"><p class="market-status-text">معاملات سکه غیرفعال می‌باشد</p></div>
+        </div>
+        <h2 class="card-title">ربع سکه امامی</h2>
+        <div class="card-prices">
+          <div class="price-block buy"><div class="price-value" id="quarter_buy">---</div></div>
+          <div class="price-block sell"><div class="price-value" id="quarter_sell">---</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="inline-settings-panel">
+    <h3 style="margin: 0 0 15px 0; color: #dfb76c; font-size: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">تنظیمات ابعاد و کمیسیون تابلوی صادق‌زاده</h3>
+    
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-weight: bold; color: #dfb76c; font-size: 13px; margin-bottom: 4px;">📏 اندازه فونت کارت‌ها:</div>
+        <div class="counter-row-item"><span>طلا: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgTitle-minus">-</button><span class="stepper-value-text" id="v-lgTitle">7.0 vh</span><button class="stepper-btn plus" id="btn-lgTitle-plus">+</button></div></div>
+        <div class="counter-row-item"><span>طلا: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgPrice-minus">-</button><span class="stepper-value-text" id="v-lgPrice">10.5 vh</span><button class="stepper-btn plus" id="btn-lgPrice-plus">+</button></div></div>
+        <div class="counter-row-item"><span>سکه: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-smTitle-minus">-</button><span class="stepper-value-text" id="v-smTitle">3.2 vh</span><button class="stepper-btn plus" id="btn-smTitle-plus">+</button></div></div>
+        <div class="counter-row-item"><span>سکه: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-smPrice-minus">-</button><span class="stepper-value-text" id="v-smPrice">5.0 vh</span><button class="stepper-btn plus" id="btn-smPrice-plus">+</button></div></div>
+      </div>
+
+      <div style="flex: 1 2 380px; display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-weight: bold; color: #dfb76c; font-size: 13px; margin-bottom: 4px;">💰 سود و کمیسیون اختصاصی تابلو (ریال):</div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 2px;">
+          <span style="width: 90px; font-size:12px; font-weight:bold; color:#7f8c8d;">گرم ۱۸:</span>
+          <input type="text" id="cfg-g-buy" placeholder="خرید طلا" class="input-premium">
+          <input type="text" id="cfg-g-sell" placeholder="فروش طلا" class="input-premium">
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 2px;">
+          <span style="width: 90px; font-size:12px; font-weight:bold; color:#f1c40f;">سکه امامی:</span>
+          <input type="text" id="cfg-f-buy" placeholder="خرید امامی" class="input-premium">
+          <input type="text" id="cfg-f-sell" placeholder="فروش امامی" class="input-premium">
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 2px;">
+          <span style="width: 90px; font-size:12px; font-weight:bold; color:#e67e22;">نیم سکه:</span>
+          <input type="text" id="cfg-h-buy" placeholder="خرید نیم" class="input-premium">
+          <input type="text" id="cfg-h-sell" placeholder="فروش نیم" class="input-premium">
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 2px;">
+          <span style="width: 90px; font-size:12px; font-weight:bold; color:#e74c3c;">ربع سکه:</span>
+          <input type="text" id="cfg-q-buy" placeholder="خرید ربع" class="input-premium">
+          <input type="text" id="cfg-q-sell" placeholder="فروش ربع" class="input-premium">
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 15px;">
+      <button id="btn-save-config" style="flex: 1; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">ذخیره تنظیمات سیستم</button>
+      <button id="btn-close-config" style="flex: 1; padding: 10px; background: #c0392b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">انصراف</button>
+    </div>
+  </div>
+
+  <div id="toast-notif" class="toast-alert">تنظیمات تابلو با موفقیت ذخیره شد.</div>
+      
+  <div id="btn-toggle-config" title="تنظیمات تابلو" style="position: fixed; right: 80px; top: 20px; width: 35px; height: 35px; background: rgba(0, 0, 0, 0.6); border: 2px solid #dfb76c; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 999999;"><svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #dfb76c;"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l-.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg></div>
+  <div id="btn-toggle-fullscreen" title="تمام صفحه" style="position: fixed; right: 20px; top: 20px; width: 35px; height: 35px; background: rgba(0, 0, 0, 0.6); border: 2px solid #dfb76c; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 999999;"><svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #dfb76c;"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></div>
+
+  <script src="board.js"></script>
+</body>
+</html>
