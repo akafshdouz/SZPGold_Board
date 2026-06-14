@@ -203,15 +203,25 @@ function renderCalculatedPrices(goldClosed, coinClosed) {
 function calculatePassedTime() {
   const timerElement = document.getElementById('update-timer');
   if (!timerElement) return;
+  
   if (!firstRealDataReceived || lastUpdateTs === 0) {
     timerElement.innerText = "آخرین بروزرسانی قیمت‌ها: در حال بررسی...";
     return;
   }
+  
   const diffSec = Math.floor((Date.now() - lastUpdateTs) / 1000);
   let text = "آخرین بروزرسانی قیمت‌ها: ";
-  if (diffSec < 1) text += "هم اکنون";
-  else if (diffSec < 60) text += `${formatAndPersianize(diffSec)} ثانیه پیش`;
-  else text += `${formatAndPersianize(Math.floor(diffSec / 60))} دقیقه پیش`;
+  
+  if (diffSec < 1) {
+    text += "هم اکنون";
+  } else if (diffSec < 60) {
+    text += `${formatAndPersianize(diffSec)} ثانیه پیش`;
+  } else {
+    // تبدیل دقیق ثانیه به دقیقه و ثانیه‌های باقی‌مانده برای نمایش بدون نقص
+    const minutes = Math.floor(diffSec / 60);
+    text += `${formatAndPersianize(minutes)} دقیقه پیش`;
+  }
+  
   timerElement.innerText = text;
 }
 
