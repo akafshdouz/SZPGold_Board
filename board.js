@@ -2,7 +2,7 @@ let currentSizes = { lgTitle: 7.0, lgPrice: 10.5, smTitle: 3.2, smPrice: 5.0 };
 let lastUpdateTs = 0;
 let serverConnected = false;
 let socket = null;
-let pingInterval = null; // برای مدیریت اینتروال و جلوگیری از نشت حافظه
+let pingInterval = null;
 
 let commissions = { g_buy: 0, g_sell: 0, f_buy: 0, f_sell: 0, h_buy: 0, h_sell: 0, q_buy: 0, q_sell: 0 };
 let rawPrices = { g_buy: 0, g_sell: 0, f_buy: 0, f_sell: 0, h_buy: 0, h_sell: 0, q_buy: 0, q_sell: 0 };
@@ -20,7 +20,6 @@ function playChangeSound() {
     } catch (e) { console.log("خطا در پخش صدا:", e); }
 }
 
-// استفاده از ابزار بومی و بسیار بهینه‌تر مرورگر برای سه رقم سه رقم و فارسی‌سازی استاندارد
 function formatAndPersianize(num) {
   if (num === undefined || num === null || num === '---') return '---';
   let val = Math.round(parseFloat(num.toString().replace(/,/g, '')));
@@ -34,7 +33,6 @@ function toPersianDigits(str) {
   return str.replace(/[0-9]/g, d => farsi[parseInt(d)]);
 }
 
-// زمان‌بندی بررسی وضعیت سوکت بر اساس منطق پینگ جدید (۱۱۵ ثانیه)
 setInterval(() => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     serverConnected = false;
@@ -44,7 +42,6 @@ setInterval(() => {
 }, 115000);
 
 function connectPusherSocket() {
-  // حل مشکل نشت حافظه: پاکسازی سوکت و اینتروال‌های قبلی پیش از اتصال مجدد
   if (pingInterval) {
     clearInterval(pingInterval);
     pingInterval = null;
@@ -65,13 +62,12 @@ function connectPusherSocket() {
     if (sDot) sDot.style.backgroundColor = '#2ed573';
     socket.send(JSON.stringify({"event": "pusher:subscribe", "data": {"auth": "", "channel": "deniz"}}));
     
-    // پینگ رندم بین ۸۰ تا ۱۱۰ ثانیه برای بهینه‌سازی مصرف شبکه
     const setupRandomPing = () => {
       const randomDelay = Math.floor(Math.random() * (110000 - 80000 + 1)) + 80000;
       pingInterval = setTimeout(() => {
         if (socket && socket.readyState === WebSocket.OPEN) {
           socket.send(JSON.stringify({"event": "pusher:ping", "data": {}}));
-          setupRandomPing(); // برنامه‌ریزی پینگ بعدی با زمان رندم جدید
+          setupRandomPing();
         }
       }, randomDelay);
     };
@@ -217,7 +213,6 @@ function calculatePassedTime() {
   } else if (diffSec < 60) {
     text += `${formatAndPersianize(diffSec)} ثانیه پیش`;
   } else {
-    // تبدیل دقیق ثانیه به دقیقه و ثانیه‌های باقی‌مانده برای نمایش بدون نقص
     const minutes = Math.floor(diffSec / 60);
     text += `${formatAndPersianize(minutes)} دقیقه پیش`;
   }
