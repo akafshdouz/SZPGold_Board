@@ -1,4 +1,4 @@
-let currentSizes = { lgTitle: 7.0, lgPrice: 10.5, smTitle: 3.2, smPrice: 5.0 };
+let currentSizes = { lgTitle: 7.0, lgPrice: 10.5, mqTitle: 6.0, mqPrice: 9.0, smTitle: 3.2, smPrice: 5.0 };
 let lastUpdateTs = 0;
 let serverConnected = false;
 let socket = null;
@@ -320,7 +320,17 @@ function updateClock() {
 
 function applySizeToUi(key, val) {
   currentSizes[key] = Math.max(1, Math.min(25, parseFloat((currentSizes[key] + val).toFixed(1))));
-  document.documentElement.style.setProperty(`--${key.slice(0,2).toLowerCase()}-${key.slice(2).toLowerCase()}-size`, currentSizes[key] + 'vh');
+  
+  // تبدیل نام‌ها به فرمت استاندارد استایل
+  let cssKey = '';
+  if (key === 'lgTitle') cssKey = '--lg-title-size';
+  if (key === 'lgPrice') cssKey = '--lg-price-size';
+  if (key === 'mqTitle') cssKey = '--mq-title-size';
+  if (key === 'mqPrice') cssKey = '--mq-price-size';
+  if (key === 'smTitle') cssKey = '--sm-title-size';
+  if (key === 'smPrice') cssKey = '--sm-price-size';
+  
+  document.documentElement.style.setProperty(cssKey, currentSizes[key] + 'vh');
   const indicator = document.getElementById(`v-${key}`);
   if (indicator) indicator.innerText = currentSizes[key] + ' vh';
 }
@@ -386,7 +396,7 @@ function initSettingsSystem() {
     });
   }
 
-  const setups = ['lgTitle', 'lgPrice', 'smTitle', 'smPrice'];
+  const setups = ['lgTitle', 'lgPrice', 'mqTitle', 'mqPrice', 'smTitle', 'smPrice'];
   setups.forEach(key => {
     const btnMinus = document.getElementById(`btn-${key}-minus`);
     const btnPlus = document.getElementById(`btn-${key}-plus`);
