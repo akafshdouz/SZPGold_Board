@@ -330,62 +330,71 @@ header {
   box-shadow: 0 0 5px rgba(223, 183, 108, 0.3);
 }
 
+/* 🖥️ نسخه ضد شکستگی و ثابت نگه‌داشتن چیدمان تابلو در تمامی رزولوشن‌ها و زوم‌ها */
 @media screen and (max-width: 1024px) {
+  /* جلوگیری از اسکرول خوردن عمودی بدنه */
   body {
-    overflow-y: auto;
-    height: auto;
+    overflow: hidden !important;
+    height: 100vh !important;
   }
+  
+  /* حفظ ساختار ۳ ستونه سربرگ به صورت فشرده */
   header {
-    grid-template-columns: 1fr;
-    gap: 2vh;
-    padding: 2vh 4vw;
-    text-align: center;
+    grid-template-columns: 1fr auto 1fr !important;
+    gap: 1vw !important;
+    padding: 0 2vw !important;
   }
-  .time-date-box { align-items: center; text-align: center; margin-top: 0; }
-  .indicators-box { align-items: center; }
   
+  /* جلوگیری از افتادن بخش زمان و تاریخ به زیر هم */
+  .time-date-box { 
+    margin-top: 2vh !important;
+    margin-left: 0 !important;
+    min-width: auto !important;
+  }
+
+  /* سفت چسبیدن چیدمان اصلی به فرمت دسکتاپ */
   .main-layout {
-    height: auto;
-    justify-content: flex-start;
-    gap: 4vh;
+    height: 100% !important;
+    justify-content: space-between !important;
+    gap: 2vh !important;
   }
-  .top-row, .bottom-row {
-    height: auto;
-  }
-  
+
+  /* وادار کردن کارت‌های سکه به ماندن در یک ردیفِ ۳ تایی و نرفتن به زیر هم */
   .bottom-row {
-    grid-template-columns: 1fr;
-    gap: 3vh;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1vw !important;
   }
   
+  /* حفظ فرمت افقی کارت بزرگ طلا */
   .card.large-card {
-    flex-direction: column;
-    gap: 3vh;
-    padding: 3vh;
+    flex-direction: row !important;
+    gap: 2vw !important;
+    padding: 2vh 4vw !important;
   }
-  .large-card .card-title {
-    border-right: none;
-    border-bottom: 3px solid #dfb76c;
-    padding-right: 0;
-    padding-bottom: 1vh;
-    width: 100%;
-    text-align: center;
-  }
-  .card-prices, .large-card .card-prices {
-    flex-direction: column;
-    gap: 3vh;
-    width: 100%;
-  }
-  .large-card .price-block, .small-card .price-block {
-    width: 100%;
-    justify-content: center;
-  }
-  .large-card .price-value { font-size: 6vh; }
-  .small-card .price-value { font-size: 5vh; }
   
+  /* برگرداندن خط عمودی جداکننده عنوان طلا */
+  .large-card .card-title {
+    border-right: 0.5vh solid #dfb76c !important;
+    border-bottom: none !important;
+    padding-right: 2vw !important;
+    padding-bottom: 0 !important;
+    text-align: right !important;
+  }
+  
+  /* حفظ چیدمان افقی قیمت‌های داخل کارت طلا */
+  .large-card .card-prices {
+    flex-direction: row !important;
+    gap: 6vw !important;
+  }
+
+  /* تنظیم هوشمند اندازه فونت‌ها در حالت فشرده تا بیرون نزنند */
+  .large-card .price-value { font-size: var(--lg-price-size, 8vh) !important; }
+  .small-card .price-value { font-size: var(--sm-price-size, 4vh) !important; }
+  
+  /* پاپ آپ تنظیمات */
   #inline-settings-panel {
-    width: 90% !important;
-    max-height: 90vh;
+    width: 95% !important;
+    max-height: 95vh;
     overflow-y: auto;
   }
 }
