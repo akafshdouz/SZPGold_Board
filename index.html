@@ -352,30 +352,55 @@ header {
   }
 
   /* ۲. بازسازی هدر به حالت دو ستونه (لوگو یک طرف، چراغ‌ها یک طرف) */
+  /* ۲. بازسازی هدر به حالت ستونی و کاملاً وسط‌چین */
   header {
-    grid-template-columns: 1fr 1fr !important;
-    min-height: 10vh !important;
-    padding: 2vh 4vw !important;
-  }
-  .center-logo-box {
-    justify-content: flex-start !important;
-    margin-top: 0 !important;
-  }
-  .center-logo-box img {
-    max-height: 8vh !important;
-  }
-  .indicators-box {
-    align-items: flex-end !important;
-    gap: 0.5vh !important;
-  }
-  .indicators-box span {
-    font-size: 14px !important;
-  }
-  .ind-dot {
-    width: 1.5vh !important;
-    height: 1.5vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 12vh !important;
+    padding: 1.5vh 4vw 0.5vh 4vw !important;
+    gap: 1vh !important; /* ایجاد فاصله عمودی بین لوگو و چراغ‌ها */
   }
 
+  .center-logo-box {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 0 !important;
+    width: 100% !important;
+  }
+
+  .center-logo-box img {
+    max-height: 7vh !important; /* اندازه متناسب لوگو روی صفحه گوشی */
+    width: auto !important;
+  }
+
+  /* چراغ‌های وضعیت به صورت افقی زیر لوگو ردیف می‌شوند */
+  .indicators-box {
+    display: flex !important;
+    flex-direction: row !important; /* چیدمان افقی به جای عمودی */
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4vw !important; /* فاصله افقی بین سه تا چراغ */
+    width: 100% !important;
+  }
+
+  .ind-item {
+    display: flex !important;
+    flex-direction: row-reverse !important; /* نقطه سمت چپ متن قرار بگیرد */
+    align-items: center !important;
+    gap: 1.5vw !important;
+  }
+
+  .indicators-box span {
+    font-size: 13px !important;
+  }
+
+  .ind-dot {
+    width: 1.2vh !important;
+    height: 1.2vh !important;
+  }
   /* ۳. بهینه‌سازی لایوت اصلی برای چیدمان زیر هم کارت‌ها */
   .main-layout {
     height: auto !important;
