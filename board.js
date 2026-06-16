@@ -268,24 +268,38 @@ function calculatePassedTime() {
   const timerElement = document.getElementById('update-timer');
   if (!timerElement) return;
   
-  if (!firstRealDataReceived || lastUpdateTs === 0) {
-    timerElement.innerText = "آخرین بروزرسانی قیمت‌ها: در حال بررسی...";
+  // 🛡️ بررسی اولویت‌بندی قطعی شبکه و اتصال
+  if (!navigator.onLine) {
+    timerElement.innerHTML = `آخرین بروزرسانی قیمت‌ها: <span style="color: #ff471a !important; text-shadow: 0 0 10px rgba(255, 71, 26, 0.5);">قطعی اینترنت</span>`;
     return;
   }
   
-  const diffSec = Math.floor((Date.now() - lastUpdateTs) / 1000);
-  let text = "آخرین بروزرسانی قیمت‌ها: ";
-  
-  if (diffSec < 1) {
-    text += "هم اکنون";
-  } else if (diffSec < 60) {
-    text += `${formatAndPersianize(diffSec)} ثانیه پیش`;
-  } else {
-    const minutes = Math.floor(diffSec / 60);
-    text += `${formatAndPersianize(minutes)} دقیقه پیش`;
+  if (!serverConnected || !socket || socket.readyState !== WebSocket.OPEN) {
+    timerElement.innerHTML = `آخرین بروزرسانی قیمت‌ها: <span style="color: #ff471a !important; text-shadow: 0 0 10px rgba(255, 71, 26, 0.5);">قطعی سرور سوکت</span>`;
+    return;
   }
   
-  timerElement.innerText = text;
+  // حالت عادی: اگر قیمت‌ها هنوز لود اولیه نشده‌اند
+  if (!firstRealDataReceived || lastUpdateTs === 0) {
+    timerElement.innerHTML = `آخرین بروزرسانی قیمت‌ها: <span id="timer-status-text" style="color: #dfb76c;">در حال بررسی...</span>`;
+    return;
+  }
+  
+  // محاسبه تایمر عادی پس از دریافت اولین دیتای سالم
+  const diffSec = Math.floor((Date.now() - lastUpdateTs) / 1000);
+  let timeText = "";
+  
+  if (diffSec < 1) {
+    timeText = "هم اکنون";
+  } else if (diffSec < 60) {
+    timeText = `${formatAndPersianize(diffSec)} ثانیه پیش`;
+  } else {
+    const minutes = Math.floor(diffSec / 60);
+    timeText = `${formatAndPersianize(minutes)} دقیقه پیش`;
+  }
+  
+  // بازگرداندن رنگ متن به طلاییِ دفتریِ خودت در صورت وصل بودن سیستم
+  timerElement.innerHTML = `آخرین بروزرسانی قیمت‌ها: <span style="color: #dfb76c;">${timeText}</span>`;
 }
 
 function updateClock() {
