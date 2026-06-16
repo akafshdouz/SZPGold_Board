@@ -4,11 +4,13 @@ let serverConnected = false;
 let socket = null;
 let pingInterval = null;
 let githubConnected = true;
- 
 
+// اضافه شدن مثقال ۱۸ عیار (m_buy و m_sell) به لیست کمیسیون‌ها با مقادیر پیش‌فرض
 let commissions = { 
   g_buy: 0,          // طلا سبز: بدون تغییر (0 ریال)
   g_sell: -1500000,  // طلا قرمز: کسر ۱,۵۰۰,۰۰۰ ریال
+  m_buy: 0,          // مثقال سبز: بدون تغییر (0 ریال)
+  m_sell: -6500000,  // مثقال قرمز: کسر ۶,۵۰۰,۰۰۰ ریال (جدید)
   f_buy: 15000000,   // تمام سبز: اضافه شدن ۱۵,۰۰۰,۰۰۰ ریال
   f_sell: -15000000, // تمام قرمز: کسر ۱۵,۰۰۰,۰۰۰ ریال
   h_buy: 10000000,   // نیم سبز: اضافه شدن ۱۰,۰۰۰,۰۰۰ ریال
@@ -17,8 +19,9 @@ let commissions = {
   q_sell: -10000000  // ربع قرمز: کسر ۱۰,۰۰۰,۰۰۰ ریال
 };
 
-let rawPrices = { g_buy: 0, g_sell: 0, f_buy: 0, f_sell: 0, h_buy: 0, h_sell: 0, q_buy: 0, q_sell: 0 };
-let itemStatuses = { g_buy: 1, g_sell: 1, f_buy: 1, f_sell: 1, h_buy: 1, h_sell: 1, q_buy: 1, q_sell: 1 };
+// اضافه شدن کلیدهای مثقال به آرایه‌های وضعیت و قیمت خام
+let rawPrices = { g_buy: 0, g_sell: 0, m_buy: 0, m_sell: 0, f_buy: 0, f_sell: 0, h_buy: 0, h_sell: 0, q_buy: 0, q_sell: 0 };
+let itemStatuses = { g_buy: 1, g_sell: 1, m_buy: 1, m_sell: 1, f_buy: 1, f_sell: 1, h_buy: 1, h_sell: 1, q_buy: 1, q_sell: 1 };
 
 let firstMessageReceived = false;   
 let firstRealDataReceived = false;  
@@ -46,16 +49,13 @@ function toPersianDigits(str) {
   return str.replace(/[0-9]/g, d => farsi[parseInt(d)]);
 }
 
-
 setInterval(async () => {
-  // ۱. بررسی وضعیت سوکت
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     serverConnected = false;
     const sDot = document.getElementById('server-dot');
     if (sDot) sDot.style.backgroundColor = '#ff4757';
   }
 
-  // ۲. بررسی وضعیت گیت‌هاب به صورت کاملاً بهینه
   try {
     const response = await fetch('index.html', { cache: 'no-store', method: 'HEAD' });
     githubConnected = response.ok;
@@ -69,7 +69,6 @@ setInterval(async () => {
     ghDot.style.boxShadow = githubConnected ? '0 0 14px #2ed573' : '0 0 14px #ff4757';
   }
 
-  // فرآیند بازخوانی رندر برای اعمال فوری وضعیت‌های قطعی چراغ‌ها
   const gOverlay = document.getElementById('gold-status-overlay');
   const cOverlay = document.getElementById('coin-status-overlay-1');
   renderCalculatedPrices(
@@ -78,7 +77,6 @@ setInterval(async () => {
   );
   calculatePassedTime();
 }, 5000); 
-
 
 function connectPusherSocket() {
   if (pingInterval) {
@@ -152,13 +150,12 @@ function connectPusherSocket() {
           const currencies = pricing[0].currencies || [];
           let priceChanged = false;
 
-	currencies.forEach(item => {
+          currencies.forEach(item => {
             const title = (item.title || "").replace(/ /g, "");
             let p_sell = (item.sell_price || 0) * 10000;
             let p_buy = (item.buy_price || 0) * 10000;
             if (p_sell === 0 || p_buy === 0) return;
 
-            // گرفتن وضعیت‌های خرید و فروش عددی (1 یا 0) مستقیم از پکت
             let b_stat = item.buy_status !== undefined ? item.buy_status : 1;
             let s_stat = item.sell_status !== undefined ? item.sell_status : 1;
 
@@ -166,20 +163,22 @@ function connectPusherSocket() {
               let buyRound = Math.ceil(bVal / 1000.0) * 1000;
               let sellRound = Math.floor(sVal / 1000.0) * 1000;
               
-              // چک کردن تغییر قیمت یا تغییر وضعیت معامله برای فعال شدن صدا و رندر
               if (rawPrices[keyBuy] !== buyRound || rawPrices[keySell] !== sellRound || 
                   itemStatuses[keyBuy] !== currentBuyStatus || itemStatuses[keySell] !== currentSellStatus) {
                 
                 rawPrices[keyBuy] = buyRound;
                 rawPrices[keySell] = sellRound;
-                itemStatuses[keyBuy] = currentBuyStatus; // بروزرسانی وضعیت داخلی خرید
-                itemStatuses[keySell] = currentSellStatus; // بروزرسانی وضعیت داخلی فروش
+                itemStatuses[keyBuy] = currentBuyStatus;
+                itemStatuses[keySell] = currentSellStatus;
                 priceChanged = true;
               }
             };
 
             if ((item.title || "").includes("آبشده نقد") && (item.title || "").includes("24")) {
+              // ۱. محاسبه گرم ۱۸ عیار
               updateRaw('g_buy', 'g_sell', p_sell / 4.3318, p_buy / 4.3318, b_stat, s_stat);
+              // ۲. محاسبه مثقال ۱۸ عیار (مستقیماً از قیمت آبشده ۲۴ بدون تقسیم)
+              updateRaw('m_buy', 'm_sell', p_sell, p_buy, b_stat, s_stat);
             } else if (title.includes("تمامامامی86")) {
               updateRaw('f_buy', 'f_sell', p_sell, p_buy, b_stat, s_stat);
             } else if (title.includes("نیمسکه86")) {
@@ -207,11 +206,14 @@ function connectPusherSocket() {
 }
 
 function processMarketStatus(goldClosed, coinClosed) {
-  const gOverlay = document.getElementById('gold-status-overlay');
-  if (gOverlay) {
-    gOverlay.style.opacity = goldClosed ? "1" : "0";
-    gOverlay.style.pointerEvents = goldClosed ? "auto" : "none";
-  }
+  const overlays = ['gold-status-overlay', 'mithqal-status-overlay'];
+  overlays.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.opacity = goldClosed ? "1" : "0";
+      el.style.pointerEvents = goldClosed ? "auto" : "none";
+    }
+  });
 
   for (let i = 1; i <= 3; i++) {
     const cOverlay = document.getElementById(`coin-status-overlay-${i}`);
@@ -233,10 +235,8 @@ function renderCalculatedPrices(goldClosed, coinClosed) {
     }
   };
 
-  // لایه امنیتی شبکه و اتصال
   const isAnyNetworkDown = !navigator.onLine || !serverConnected;
 
-  // تابع کمکی برای محاسبه قیمت نهایی (اگر قیمت خام صفر یا شبکه قطع بود، خط تیره می‌دهد)
   const getFinalPrice = (rawPrice, commission, isClosed, itemStatus) => {
     if (isAnyNetworkDown || isClosed || itemStatus !== 1 || !firstRealDataReceived || rawPrice === 0) {
       return "---";
@@ -244,9 +244,13 @@ function renderCalculatedPrices(goldClosed, coinClosed) {
     return formatAndPersianize(rawPrice + commission);
   };
 
-  // طلا ۱۸ عیار
+  // گرم ۱۸ عیار
   update('gold_buy', getFinalPrice(rawPrices.g_buy, commissions.g_buy, goldClosed, itemStatuses.g_buy));
   update('gold_sell', getFinalPrice(rawPrices.g_sell, commissions.g_sell, goldClosed, itemStatuses.g_sell));
+
+  // مثقال ۱۸ عیار (جدید)
+  update('mithqal_buy', getFinalPrice(rawPrices.m_buy, commissions.m_buy, goldClosed, itemStatuses.m_buy));
+  update('mithqal_sell', getFinalPrice(rawPrices.m_sell, commissions.m_sell, goldClosed, itemStatuses.m_sell));
 
   // سکه تمام امامی
   update('full_buy', getFinalPrice(rawPrices.f_buy, commissions.f_buy, coinClosed, itemStatuses.f_buy));
@@ -263,12 +267,10 @@ function renderCalculatedPrices(goldClosed, coinClosed) {
   if (priceChanged) playChangeSound();
 }
 
-
 function calculatePassedTime() {
   const timerElement = document.getElementById('update-timer');
   if (!timerElement) return;
   
-  // 🛡️ بررسی اولویت‌بندی قطعی شبکه و اتصال
   if (!navigator.onLine) {
     timerElement.innerHTML = `آخرین بروزرسانی قیمت‌ها: <span style="color: #ff471a !important; text-shadow: 0 0 10px rgba(255, 71, 26, 0.5);">قطعی اینترنت</span>`;
     return;
@@ -279,13 +281,11 @@ function calculatePassedTime() {
     return;
   }
   
-  // حالت عادی: اگر قیمت‌ها هنوز لود اولیه نشده‌اند
   if (!firstRealDataReceived || lastUpdateTs === 0) {
     timerElement.innerHTML = `آخرین بروزرسانی قیمت‌ها: <span id="timer-status-text" style="color: #dfb76c;">در حال بررسی...</span>`;
     return;
   }
   
-  // محاسبه تایمر عادی پس از دریافت اولین دیتای سالم
   const diffSec = Math.floor((Date.now() - lastUpdateTs) / 1000);
   let timeText = "";
   
@@ -298,7 +298,6 @@ function calculatePassedTime() {
     timeText = `${formatAndPersianize(minutes)} دقیقه پیش`;
   }
   
-  // بازگرداندن رنگ متن به طلاییِ دفتریِ خودت در صورت وصل بودن سیستم
   timerElement.innerHTML = `آخرین بروزرسانی قیمت‌ها: <span style="color: #dfb76c;">${timeText}</span>`;
 }
 
@@ -337,9 +336,10 @@ function initSettingsSystem() {
 
   btnToggle.addEventListener('click', (e) => {
     e.stopPropagation();
-    // 🪙 قرار دادن مقادیر فعلی کمیسیون‌ها در باکس‌ها هنگام باز شدن پاپ‌آاپ (حل مشکل خالی بودن یا صفر شدن)
     document.getElementById('cfg-g-buy').value = commissions.g_buy;
     document.getElementById('cfg-g-sell').value = commissions.g_sell;
+    document.getElementById('cfg-m-buy').value = commissions.m_buy; // جدید
+    document.getElementById('cfg-m-sell').value = commissions.m_sell; // جدید
     document.getElementById('cfg-f-buy').value = commissions.f_buy;
     document.getElementById('cfg-f-sell').value = commissions.f_sell;
     document.getElementById('cfg-h-buy').value = commissions.h_buy;
@@ -357,6 +357,8 @@ function initSettingsSystem() {
     btnSave.addEventListener('click', () => {
       commissions.g_buy = parseInt(document.getElementById('cfg-g-buy').value) || 0;
       commissions.g_sell = parseInt(document.getElementById('cfg-g-sell').value) || 0;
+      commissions.m_buy = parseInt(document.getElementById('cfg-m-buy').value) || 0; // جدید
+      commissions.m_sell = parseInt(document.getElementById('cfg-m-sell').value) || 0; // جدید
       commissions.f_buy = parseInt(document.getElementById('cfg-f-buy').value) || 0;
       commissions.f_sell = parseInt(document.getElementById('cfg-f-sell').value) || 0;
       commissions.h_buy = parseInt(document.getElementById('cfg-h-buy').value) || 0;
@@ -407,21 +409,17 @@ function loadSavedConfig() {
   if (savedComm) { 
     const parsedComm = JSON.parse(savedComm);
     
-    // 🛡️ لایه ضد کش کروم: اگر دیتای ذخیره شده قبلی باگِ صفر دارد، آن را نادیده بگیر و نوسازی کن
-    if (parsedComm.g_sell === 0 || parsedComm.f_buy === 0) {
-      // فقط حافظه کمیسیون‌ها را بازنشانی کن (پیش‌فرض‌های فایل اعمال می‌شوند)
+    // لایه ضد کش کروم با پشتیبانی از فیلدهای جدید مثقال
+    if (parsedComm.g_sell === 0 || parsedComm.f_buy === 0 || parsedComm.m_sell === undefined) {
       localStorage.setItem('szp_commissions', JSON.stringify(commissions));
-      console.log("🛠️ کش دیتای صفر کروم با موفقیت پاکسازی و نوسازی شد.");
+      console.log("🛠️ کش دیتای صفر کروم پاکسازی و به همراه ساختار مثقال نوسازی شد.");
     } else {
-      // اگر دیتا درست بود و صفر نبود، همان را لود کن
       commissions = parsedComm; 
     }
   } else {
-    // اگر بار اول است، مقادیر پیش‌فرض دفتری را ذخیره کن
     localStorage.setItem('szp_commissions', JSON.stringify(commissions));
   }
   
-  // 📐 این بخش مربوط به سایز فونت‌ها است که کاملاً بدون تغییر و ایمن باقی می‌ماند
   const savedSizes = localStorage.getItem('szp_sizes');
   if (savedSizes) { 
     currentSizes = JSON.parse(savedSizes); 
@@ -434,7 +432,6 @@ function loadSavedConfig() {
 loadSavedConfig();
 initSettingsSystem();
 
-// یک بار رندر اولیه برای اینکه تابلو آماده و تمیز در حالت خط تیره بماند
 renderCalculatedPrices(false, false);
 
 connectPusherSocket();

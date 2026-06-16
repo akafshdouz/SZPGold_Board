@@ -31,52 +31,47 @@ header {
   padding: 0 2vw;
   width: 100%; 
   box-sizing: border-box;
-  min-height: 18vh;
+  min-height: 14vh; /* یک ذره جمع‌وجور تر برای باز شدن جا در ارتفاع */
   position: relative;
   z-index: 2;
-  //border-bottom: 2px solid #dfb76c; /* خط افقی زیر لوگو سر جای خودش */
-  background: none; /* حذف آن لایه تیره اضافه */
+  background: none; 
 }
 
 #live-time {
   font-family: 'BTitr', sans-serif; 
-  font-size: clamp(35px, 5vh, 65px); 
+  font-size: clamp(30px, 4.5vh, 55px); 
   font-weight: bold;
   direction: ltr;
   line-height: 1;
-  
-  /* معجزه اصلی اینجاست: به مرورگر می‌گوید پهنای تک‌تک اعداد را برابر فرض کند */
   font-feature-settings: "tnum";
   font-variant-numeric: tabular-nums;
 }
 
-/* ۳. جلوگیری از جابجایی باکس زمان به دلیل کوتاه و بلند شدن متن تاریخ */
 .time-date-box {
   display: flex;
   flex-direction: column;
   align-items: center;    
   text-align: center;     
   font-family: 'BArash', sans-serif;
-  margin-top: 7vh; 
+  margin-top: 4vh; 
   margin-left: 25vh;
-  min-width: 250px; /* دادن یک کفِ پهنای ثابت تا تکان نخورد */
+  min-width: 250px; 
 }
 
-/* بزرگ‌تر کردن فونت تاریخ */
 #live-date {
   font-family: 'BNazanin', sans-serif; 
-  font-size: clamp(22px, 3vh, 32px);
-  margin-top: 0.5vh;
+  font-size: clamp(20px, 2.5vh, 28px);
+  margin-top: 0.3vh;
 }
 
 .center-logo-box {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top:-2.5vh;
+  margin-top: -1vh;
 }
 .center-logo-box img { 
-  max-height: 20vh; 
+  max-height: 15vh; 
   width: auto; 
   object-fit: contain; 
 }
@@ -84,9 +79,9 @@ header {
 .indicators-box {
   display: flex;
   flex-direction: column;
-  gap: 1.2vh;
+  gap: 0.8vh;
   font-family: 'BNazanin', sans-serif;
-  font-size: clamp(18px, 2vh, 28px);
+  font-size: clamp(16px, 1.8vh, 24px);
   align-items: flex-end;
 }
 
@@ -96,11 +91,10 @@ header {
   justify-content: flex-end;
   gap: 0.8vw;
 }
-.ind-item span { text-align: left; }
 
 .ind-dot {
-  width: 2.4vh;
-  height: 2.4vh;
+  width: 2vh;
+  height: 2vh;
   border-radius: 50%;
   background-color: #ff4757;
   box-shadow: 0 0 14px #ff4757;
@@ -110,37 +104,41 @@ header {
 .main-layout {
   display: flex;
   flex-direction: column;
-  gap: 2vh; 
-  padding: 1vh 1vw 12vh 1vw;
+  gap: 1.5vh; 
+  padding: 0vh 1vw 4vh 1vw; /* پدینگ پایینی برای مانیتورهای بزرگ کنترل شده */
   flex-grow: 1;
   box-sizing: border-box;
   justify-content: space-between;
   min-height: 0; 
 }
 
-/* بزرگ‌تر و خواناتر کردن نوار آخرین آپدیت قیمت‌ها */
 .currency-bar-attached {
   width: 100%;
   text-align: center;
   font-family: 'BNazanin', sans-serif;
-  font-size: clamp(26px, 4.2vh, 48px);
+  font-size: clamp(22px, 3.5vh, 42px);
   color: #dfb76c;
   text-shadow: 0 2px 12px rgba(0,0,0,0.8);
   font-weight: bold;
-  margin-top: 1vh;
-  margin-bottom: 1vh;
+  margin-top: 0.5vh;
+  margin-bottom: 0.5vh;
 }
 
+/* ردیف بالا به کانتینر فلکس دو ستونه تبدیل شد تا کارت طلا و مثقال زیر هم بیایند */
 .top-row {
   width: 100%;
-  height: 26vh; 
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+  height: 44vh; /* اختصاص فضای متعادل برای دو کارت افقی بزرگ */
   flex-shrink: 0;
 }
+
 .bottom-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1vw;
-  height: 40vh; 
+  height: 32vh; /* ارتفاع سکه‌ها کمی بهینه شد تا جا برای مثقال باز شود */
   flex-shrink: 0;
 }
 
@@ -155,22 +153,21 @@ header {
 }
 
 .card.large-card {
-  /* پدینگ داخلی کارت طلا را کمی بیشتر می‌کنیم تا فضای داخل کارت بزرگ‌تر حس شود */
-  padding: 2vh 4vw; 
+  padding: 1vh 4vw; 
   width: 100%;
-  height: 100%;
+  height: 21vh; /* ارتفاع دقیق و استاندارد کارت‌های ردیف بالا */
   align-items: center;        
   justify-content: space-between;
 }
 
 .card.small-card {
-  /* پدینگ داخلی کارت‌های سکه را هم از چپ و راست بازتر می‌کنیم */
   padding: 1vh 2vw;
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
   height: 100%;
 }
+
 .large-card .card-title {
   font-family: 'BArash', sans-serif;
   font-size: var(--lg-title-size, 7vh);
@@ -181,6 +178,7 @@ header {
   border-right: 0.5vh solid #dfb76c;
   min-width: 20vw;
 }
+
 .small-card .card-title {
   font-family: 'BArash', sans-serif;
   font-size: var(--sm-title-size, 3.2vh);
@@ -204,7 +202,7 @@ header {
 .small-card .card-prices {
   flex-direction: column;
   width: 100%;
-  gap: 3.5vh;
+  gap: 2vh;
   align-items: center;
   justify-content: center;
 }
@@ -252,12 +250,12 @@ header {
 }
 .market-status-card {
   background: rgba(192, 41, 43, 0.95);
-  border: 1px solid #ff4d4d; padding: 15px 30px;
+  border: 1px solid #ff4d4d; padding: 10px 25px;
   border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
   text-align: center;
 }
 .market-status-text {
-  font-family: 'BTitr', sans-serif; font-size: 2.8vh; color: #ffffff; margin: 0;
+  font-family: 'BTitr', sans-serif; font-size: 2.5vh; color: #ffffff; margin: 0;
 }
 
 #first-load-shutter {
@@ -282,13 +280,12 @@ header {
   pointer-events: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-/* اصلاح کامل پاپ‌آپ تنظیمات به صورت پاپ‌آپ شناور روی تمام لایه‌ها */
 #inline-settings-panel {
   display: none; 
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50., -50.);
   width: 650px;
   max-width: 95vw;
   background: rgba(20, 24, 30, 0.98);
@@ -317,7 +314,7 @@ header {
   background: #1e272e;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   color: #ffffff;
   font-family: Tahoma, sans-serif;
   font-size: 13px;
@@ -330,49 +327,35 @@ header {
   box-shadow: 0 0 5px rgba(223, 183, 108, 0.3);
 }
 
-/* 🖥️ نسخه ضد شکستگی و ثابت نگه‌داشتن چیدمان تابلو در تمامی رزولوشن‌ها و زوم‌ها */
 @media screen and (max-width: 1024px) {
-  /* جلوگیری از اسکرول خوردن عمودی بدنه */
   body {
     overflow: hidden !important;
     height: 100vh !important;
   }
-  
-  /* حفظ ساختار ۳ ستونه سربرگ به صورت فشرده */
   header {
     grid-template-columns: 1fr auto 1fr !important;
     gap: 1vw !important;
     padding: 0 2vw !important;
   }
-  
-  /* جلوگیری از افتادن بخش زمان و تاریخ به زیر هم */
   .time-date-box { 
     margin-top: 2vh !important;
     margin-left: 0 !important;
     min-width: auto !important;
   }
-
-  /* سفت چسبیدن چیدمان اصلی به فرمت دسکتاپ */
   .main-layout {
     height: 100% !important;
     justify-content: space-between !important;
-    gap: 2vh !important;
+    gap: 1.5vh !important;
   }
-
-  /* وادار کردن کارت‌های سکه به ماندن در یک ردیفِ ۳ تایی و نرفتن به زیر هم */
   .bottom-row {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 1vw !important;
   }
-  
-  /* حفظ فرمت افقی کارت بزرگ طلا */
   .card.large-card {
     flex-direction: row !important;
     gap: 2vw !important;
-    padding: 2vh 4vw !important;
+    padding: 1vh 4vw !important;
   }
-  
-  /* برگرداندن خط عمودی جداکننده عنوان طلا */
   .large-card .card-title {
     border-right: 0.5vh solid #dfb76c !important;
     border-bottom: none !important;
@@ -380,18 +363,12 @@ header {
     padding-bottom: 0 !important;
     text-align: right !important;
   }
-  
-  /* حفظ چیدمان افقی قیمت‌های داخل کارت طلا */
   .large-card .card-prices {
     flex-direction: row !important;
     gap: 6vw !important;
   }
-
-  /* تنظیم هوشمند اندازه فونت‌ها در حالت فشرده تا بیرون نزنند */
   .large-card .price-value { font-size: var(--lg-price-size, 8vh) !important; }
   .small-card .price-value { font-size: var(--sm-price-size, 4vh) !important; }
-  
-  /* پاپ آپ تنظیمات */
   #inline-settings-panel {
     width: 95% !important;
     max-height: 95vh;
@@ -399,7 +376,6 @@ header {
   }
 }
 
-/* قفل کردن اعداد ثانیه‌شمار آخرین بروزرسانی قیمت‌ها */
 #update-timer{
   font-feature-settings: "tnum";
   font-variant-numeric: tabular-nums;
@@ -408,13 +384,12 @@ header {
 
 .gold-prices-container {
   display: flex !important;
-  justify-content: center !important; /* تغییر از flex-end به center برای وسط‌چین شدن کامل قیمت‌ها */
-  gap: 1.2em !important; /* فاصله هوشمند و پویا بر اساس واحد em */
+  justify-content: center !important; 
+  gap: 1.2em !important; 
   height: 100%;
   align-items: center;
-  flex-grow: 1; /* اجازه رشد باکس برای پر کردن فضای خالی وسط */
+  flex-grow: 1; 
 }
-
 </style>
 </head>
 <body>
@@ -454,12 +429,21 @@ header {
           <div class="market-status-card"><p class="market-status-text">معاملات طلا غیرفعال می‌باشد</p></div>
         </div>
         <h2 class="card-title">گرم ۱۸ عیار</h2>
-        
         <div class="card-prices gold-prices-container">
           <div class="price-block buy"><div class="price-value" id="gold_buy">---</div></div>
           <div class="price-block sell"><div class="price-value" id="gold_sell">---</div></div>
         </div>
+      </div>
 
+      <div class="card large-card">
+        <div id="mithqal-status-overlay" class="market-status-overlay">
+          <div class="market-status-card"><p class="market-status-text">معاملات طلا غیرفعال می‌باشد</p></div>
+        </div>
+        <h2 class="card-title">مثقال ۱۸ عیار</h2>
+        <div class="card-prices gold-prices-container">
+          <div class="price-block buy"><div class="price-value" id="mithqal_buy">---</div></div>
+          <div class="price-block sell"><div class="price-value" id="mithqal_sell">---</div></div>
+        </div>
       </div>
     </div>
 
@@ -503,20 +487,25 @@ header {
     <h3 style="margin: 0 0 15px 0; color: #dfb76c; font-size: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">تنظیمات ابعاد و کمیسیون تابلوی صادق‌زاده</h3>
     
     <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-      <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 4px;">
+      <div style="flex: 1 1 250px; display: flex; flex-direction: column; gap: 4px;">
         <div style="font-weight: bold; color: #dfb76c; font-size: 13px; margin-bottom: 4px;">📏 اندازه فونت کارت‌ها:</div>
-        <div class="counter-row-item"><span>طلا: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgTitle-minus">-</button><span class="stepper-value-text" id="v-lgTitle">7.0 vh</span><button class="stepper-btn plus" id="btn-lgTitle-plus">+</button></div></div>
-        <div class="counter-row-item"><span>طلا: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgPrice-minus">-</button><span class="stepper-value-text" id="v-lgPrice">10.5 vh</span><button class="stepper-btn plus" id="btn-lgPrice-plus">+</button></div></div>
+        <div class="counter-row-item"><span>طلا/مثقال: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgTitle-minus">-</button><span class="stepper-value-text" id="v-lgTitle">7.0 vh</span><button class="stepper-btn plus" id="btn-lgTitle-plus">+</button></div></div>
+        <div class="counter-row-item"><span>طلا/مثقال: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgPrice-minus">-</button><span class="stepper-value-text" id="v-lgPrice">10.5 vh</span><button class="stepper-btn plus" id="btn-lgPrice-plus">+</button></div></div>
         <div class="counter-row-item"><span>سکه: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-smTitle-minus">-</button><span class="stepper-value-text" id="v-smTitle">3.2 vh</span><button class="stepper-btn plus" id="btn-smTitle-plus">+</button></div></div>
         <div class="counter-row-item"><span>سکه: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-smPrice-minus">-</button><span class="stepper-value-text" id="v-smPrice">5.0 vh</span><button class="stepper-btn plus" id="btn-smPrice-plus">+</button></div></div>
       </div>
 
-      <div style="flex: 1 2 380px; display: flex; flex-direction: column; gap: 5px;">
+      <div style="flex: 1 2 330px; display: flex; flex-direction: column; gap: 5px;">
         <div style="font-weight: bold; color: #dfb76c; font-size: 13px; margin-bottom: 4px;">💰 سود و کمیسیون اختصاصی تابلو (ریال):</div>
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 2px;">
           <span style="width: 90px; font-size:12px; font-weight:bold; color:#7f8c8d;">گرم ۱۸:</span>
           <input type="text" id="cfg-g-buy" placeholder="خرید طلا" class="input-premium">
           <input type="text" id="cfg-g-sell" placeholder="فروش طلا" class="input-premium">
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 2px;">
+          <span style="width: 90px; font-size:12px; font-weight:bold; color:#3498db;">مثقال ۱۸:</span>
+          <input type="text" id="cfg-m-buy" placeholder="خرید مثقال" class="input-premium">
+          <input type="text" id="cfg-m-sell" placeholder="فروش مثقال" class="input-premium">
         </div>
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 2px;">
           <span style="width: 90px; font-size:12px; font-weight:bold; color:#f1c40f;">سکه امامی:</span>
