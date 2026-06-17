@@ -4,9 +4,6 @@ let serverConnected = false;
 let socket = null;
 let pingInterval = null;
 let githubConnected = true;
-let githubConnected = true;
-let disconnectTimeout = null; // متغیر جدید برای مدیریت تلورانس ۲ ثانیه‌ای قطعی
-
 
 // اضافه شدن مثقال ۱۸ عیار (m_buy و m_sell) به لیست کمیسیون‌ها با مقادیر پیش‌فرض
 let commissions = { 
@@ -52,28 +49,11 @@ function toPersianDigits(str) {
   return str.replace(/[0-9]/g, d => farsi[parseInt(d)]);
 }
 
-// کد اصلاح شده تایمر بررسی وضعیت
 setInterval(async () => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
-    // اگر از قبل تایمر تلورانس فعال نشده، آن را روشن کن
-    if (!disconnectTimeout) {
-      disconnectTimeout = setTimeout(() => {
-        serverConnected = false;
-        const sDot = document.getElementById('server-dot');
-        if (sDot) {
-          sDot.style.backgroundColor = '#ff4757';
-          sDot.style.boxShadow = '0 0 14px #ff4757';
-        }
-        // اگر متد رندر قیمت‌ها وجود دارد، برای امنیت بیشتر دیتای منقضی شده را پاک کن
-        if (typeof renderCalculatedPrices === 'function') renderCalculatedPrices(); 
-      }, 2000); // ۲ ثانیه تلورانس
-    }
-  } else {
-    // اگر سوکت وصل است، اگر تایمر قطعی در جریان بود آن را لغو کن
-    if (disconnectTimeout) {
-      clearTimeout(disconnectTimeout);
-      disconnectTimeout = null;
-    }
+    serverConnected = false;
+    const sDot = document.getElementById('server-dot');
+    if (sDot) sDot.style.backgroundColor = '#ff4757';
   }
 
   try {
@@ -115,22 +95,9 @@ function connectPusherSocket() {
 
   socket.onopen = () => {
     serverConnected = true;
-    
-    // لغو آنی تایمر تلورانس قطعی به محض اتصال مجدد موفقیت‌آمیز
-    if (disconnectTimeout) {
-      clearTimeout(disconnectTimeout);
-      disconnectTimeout = null;
-    }
-
     const sDot = document.getElementById('server-dot');
-    if (sDot) {
-      sDot.style.backgroundColor = '#2ed573';
-      sDot.style.boxShadow = '0 0 14px #2ed573';
-    }
+    if (sDot) sDot.style.backgroundColor = '#2ed573';
     socket.send(JSON.stringify({"event": "pusher:subscribe", "data": {"auth": "", "channel": "deniz"}}));
-  };
-
-
     
     const setupRandomPing = () => {
       const randomDelay = Math.floor(Math.random() * (110000 - 80000 + 1)) + 80000;
@@ -145,35 +112,25 @@ function connectPusherSocket() {
   };
 
   socket.onclose = () => {
-    // تلاش برای اتصال مجدد در پس‌زمینه بلافاصله شروع شود
+    serverConnected = false;
+    const sDot = document.getElementById('server-dot');
+    if (sDot) sDot.style.backgroundColor = '#ff4757';
     if (pingInterval) clearTimeout(pingInterval);
     setTimeout(connectPusherSocket, 3000);
-
-    // به جای قرمز کردن آنی، ۲ ثانیه فرصت بده
-    if (!disconnectTimeout) {
-      disconnectTimeout = setTimeout(() => {
-        serverConnected = false;
-        const sDot = document.getElementById('server-dot');
-        if (sDot) {
-          sDot.style.backgroundColor = '#ff4757';
-          sDot.style.boxShadow = '0 0 14px #ff4757';
-        }
-        if (typeof renderCalculatedPrices === 'function') renderCalculatedPrices();
-      }, 2000); // ۲ ثانیه تلورانس برای نوسانات شبکه
-    }
   };
-
-
 
   socket.onmessage = (event) => {
     window.lastIncomingEvent = event;
     const packet = JSON.parse(event.data);
     
-    // جایگزین کنید با این:
     if (!firstMessageReceived) {
       firstMessageReceived = true;
+      const shutter = document.getElementById('first-load-shutter');
+      if (shutter) {
+        shutter.style.opacity = '0';
+        setTimeout(() => shutter.remove(), 600);
+      }
     }
-
 
     if (packet.event === "app" || packet.event === "new-panel") {
       const payload = JSON.parse(packet.data || "{}");
@@ -354,12 +311,10 @@ function updateClock() {
   const dateEl = document.getElementById('live-date');
   const netDot = document.getElementById('internet-dot');
 
-   if (timeEl) timeEl.innerText = `${toPersianDigits(h)}:${toPersianDigits(m)}:${toPersianDigits(s)}`;
+  if (timeEl) timeEl.innerText = `${toPersianDigits(h)}:${toPersianDigits(m)}:${toPersianDigits(s)}`;
   if (dateEl) dateEl.innerText = now.toLocaleDateString('fa-IR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   if (netDot) {
-    const isOnline = navigator.onLine;
-    netDot.style.backgroundColor = isOnline ? '#2ed573' : '#ff4757';
-    netDot.style.boxShadow = isOnline ? '0 0 14px #2ed573' : '0 0 14px #ff4757'; // اضافه شد
+    netDot.style.backgroundColor = navigator.onLine ? '#2ed573' : '#ff4757';
   }
 }
 
