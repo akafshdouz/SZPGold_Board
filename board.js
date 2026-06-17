@@ -1,9 +1,12 @@
-let currentSizes = { lgTitle: 7.0, lgPrice: 10.5, smTitle: 3.2, smPrice: 5.0 };
+let currentSizes = { lgTitle: 7.0, lgPrice: 10.5, mqTitle: 6.0, mqPrice: 9.0, smTitle: 3.2, smPrice: 5.0 };
 let lastUpdateTs = 0;
 let serverConnected = false;
 let socket = null;
 let pingInterval = null;
 let githubConnected = true;
+let githubConnected = true;
+let disconnectTimeout = null; // متغیر جدید برای مدیریت تلورانس ۲ ثانیه‌ای قطعی
+
 
 // اضافه شدن مثقال ۱۸ عیار (m_buy و m_sell) به لیست کمیسیون‌ها با مقادیر پیش‌فرض
 let commissions = { 
@@ -49,11 +52,28 @@ function toPersianDigits(str) {
   return str.replace(/[0-9]/g, d => farsi[parseInt(d)]);
 }
 
+// کد اصلاح شده تایمر بررسی وضعیت
 setInterval(async () => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
-    serverConnected = false;
-    const sDot = document.getElementById('server-dot');
-    if (sDot) sDot.style.backgroundColor = '#ff4757';
+    // اگر از قبل تایمر تلورانس فعال نشده، آن را روشن کن
+    if (!disconnectTimeout) {
+      disconnectTimeout = setTimeout(() => {
+        serverConnected = false;
+        const sDot = document.getElementById('server-dot');
+        if (sDot) {
+          sDot.style.backgroundColor = '#ff4757';
+          sDot.style.boxShadow = '0 0 14px #ff4757';
+        }
+        // اگر متد رندر قیمت‌ها وجود دارد، برای امنیت بیشتر دیتای منقضی شده را پاک کن
+        if (typeof renderCalculatedPrices === 'function') renderCalculatedPrices(); 
+      }, 2000); // ۲ ثانیه تلورانس
+    }
+  } else {
+    // اگر سوکت وصل است، اگر تایمر قطعی در جریان بود آن را لغو کن
+    if (disconnectTimeout) {
+      clearTimeout(disconnectTimeout);
+      disconnectTimeout = null;
+    }
   }
 
   try {
@@ -95,9 +115,22 @@ function connectPusherSocket() {
 
   socket.onopen = () => {
     serverConnected = true;
+    
+    // لغو آنی تایمر تلورانس قطعی به محض اتصال مجدد موفقیت‌آمیز
+    if (disconnectTimeout) {
+      clearTimeout(disconnectTimeout);
+      disconnectTimeout = null;
+    }
+
     const sDot = document.getElementById('server-dot');
-    if (sDot) sDot.style.backgroundColor = '#2ed573';
+    if (sDot) {
+      sDot.style.backgroundColor = '#2ed573';
+      sDot.style.boxShadow = '0 0 14px #2ed573';
+    }
     socket.send(JSON.stringify({"event": "pusher:subscribe", "data": {"auth": "", "channel": "deniz"}}));
+  };
+
+
     
     const setupRandomPing = () => {
       const randomDelay = Math.floor(Math.random() * (110000 - 80000 + 1)) + 80000;
@@ -112,12 +145,25 @@ function connectPusherSocket() {
   };
 
   socket.onclose = () => {
-    serverConnected = false;
-    const sDot = document.getElementById('server-dot');
-    if (sDot) sDot.style.backgroundColor = '#ff4757';
+    // تلاش برای اتصال مجدد در پس‌زمینه بلافاصله شروع شود
     if (pingInterval) clearTimeout(pingInterval);
     setTimeout(connectPusherSocket, 3000);
+
+    // به جای قرمز کردن آنی، ۲ ثانیه فرصت بده
+    if (!disconnectTimeout) {
+      disconnectTimeout = setTimeout(() => {
+        serverConnected = false;
+        const sDot = document.getElementById('server-dot');
+        if (sDot) {
+          sDot.style.backgroundColor = '#ff4757';
+          sDot.style.boxShadow = '0 0 14px #ff4757';
+        }
+        if (typeof renderCalculatedPrices === 'function') renderCalculatedPrices();
+      }, 2000); // ۲ ثانیه تلورانس برای نوسانات شبکه
+    }
   };
+
+
 
   socket.onmessage = (event) => {
     window.lastIncomingEvent = event;
@@ -311,16 +357,28 @@ function updateClock() {
   const dateEl = document.getElementById('live-date');
   const netDot = document.getElementById('internet-dot');
 
-  if (timeEl) timeEl.innerText = `${toPersianDigits(h)}:${toPersianDigits(m)}:${toPersianDigits(s)}`;
+   if (timeEl) timeEl.innerText = `${toPersianDigits(h)}:${toPersianDigits(m)}:${toPersianDigits(s)}`;
   if (dateEl) dateEl.innerText = now.toLocaleDateString('fa-IR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   if (netDot) {
-    netDot.style.backgroundColor = navigator.onLine ? '#2ed573' : '#ff4757';
+    const isOnline = navigator.onLine;
+    netDot.style.backgroundColor = isOnline ? '#2ed573' : '#ff4757';
+    netDot.style.boxShadow = isOnline ? '0 0 14px #2ed573' : '0 0 14px #ff4757'; // اضافه شد
   }
-}
+
 
 function applySizeToUi(key, val) {
   currentSizes[key] = Math.max(1, Math.min(25, parseFloat((currentSizes[key] + val).toFixed(1))));
-  document.documentElement.style.setProperty(`--${key.slice(0,2).toLowerCase()}-${key.slice(2).toLowerCase()}-size`, currentSizes[key] + 'vh');
+  
+  // تبدیل نام‌ها به فرمت استاندارد استایل
+  let cssKey = '';
+  if (key === 'lgTitle') cssKey = '--lg-title-size';
+  if (key === 'lgPrice') cssKey = '--lg-price-size';
+  if (key === 'mqTitle') cssKey = '--mq-title-size';
+  if (key === 'mqPrice') cssKey = '--mq-price-size';
+  if (key === 'smTitle') cssKey = '--sm-title-size';
+  if (key === 'smPrice') cssKey = '--sm-price-size';
+  
+  document.documentElement.style.setProperty(cssKey, currentSizes[key] + 'vh');
   const indicator = document.getElementById(`v-${key}`);
   if (indicator) indicator.innerText = currentSizes[key] + ' vh';
 }
@@ -386,7 +444,7 @@ function initSettingsSystem() {
     });
   }
 
-  const setups = ['lgTitle', 'lgPrice', 'smTitle', 'smPrice'];
+  const setups = ['lgTitle', 'lgPrice', 'mqTitle', 'mqPrice', 'smTitle', 'smPrice'];
   setups.forEach(key => {
     const btnMinus = document.getElementById(`btn-${key}-minus`);
     const btnPlus = document.getElementById(`btn-${key}-plus`);

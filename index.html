@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>طلا و جواهرات صادق‌زاده</title>
-
-<style>
+  
+  <link rel="icon" type="image/png" href="logo.png">
+  
+  <style>
 @font-face { font-family: 'BArash'; src: url('barash.ttf') format('truetype'); }
 @font-face { font-family: 'BNazanin'; src: url('bnazanin.ttf') format('truetype'); }
 @font-face { font-family: 'BTitr'; src: url('btitr.ttf') format('truetype'); font-weight: bold; }
@@ -31,7 +33,7 @@ header {
   padding: 0 2vw;
   width: 100%; 
   box-sizing: border-box;
-  min-height: 14vh; /* یک ذره جمع‌وجور تر برای باز شدن جا در ارتفاع */
+  min-height: 14vh; 
   position: relative;
   z-index: 2;
   background: none; 
@@ -53,7 +55,7 @@ header {
   align-items: center;    
   text-align: center;     
   font-family: 'BArash', sans-serif;
-  margin-top: 4vh; 
+  margin-top: 8vh; 
   margin-left: 25vh;
   min-width: 250px; 
 }
@@ -68,7 +70,7 @@ header {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: -1vh;
+  margin-top: 0vh;
 }
 .center-logo-box img { 
   max-height: 15vh; 
@@ -104,12 +106,11 @@ header {
 .main-layout {
   display: flex;
   flex-direction: column;
-  gap: 1.5vh; 
-  padding: 0vh 1vw 4vh 1vw; /* پدینگ پایینی برای مانیتورهای بزرگ کنترل شده */
+  gap: 1.5vh; /* این گپ کلی است */
+  padding: 0vh 1vw 4vh 1vw;
   flex-grow: 1;
   box-sizing: border-box;
-  justify-content: space-between;
-  min-height: 0; 
+  justify-content: space-between; 
 }
 
 .currency-bar-attached {
@@ -120,25 +121,26 @@ header {
   color: #dfb76c;
   text-shadow: 0 2px 12px rgba(0,0,0,0.8);
   font-weight: bold;
-  margin-top: 0.5vh;
+  margin-top: 3vh;
   margin-bottom: 0.5vh;
 }
 
-/* ردیف بالا به کانتینر فلکس دو ستونه تبدیل شد تا کارت طلا و مثقال زیر هم بیایند */
 .top-row {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1.5vh;
-  height: 44vh; /* اختصاص فضای متعادل برای دو کارت افقی بزرگ */
+  gap: 1.5vh; 
+  height: auto; 
   flex-shrink: 0;
+  margin-top: 2vh; 
+  margin-bottom: 0vh; 
 }
 
 .bottom-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1vw;
-  height: 32vh; /* ارتفاع سکه‌ها کمی بهینه شد تا جا برای مثقال باز شود */
+  height: 32vh;
   flex-shrink: 0;
 }
 
@@ -155,9 +157,20 @@ header {
 .card.large-card {
   padding: 1vh 4vw; 
   width: 100%;
-  height: 21vh; /* ارتفاع دقیق و استاندارد کارت‌های ردیف بالا */
+  height: 18vh; 
   align-items: center;        
   justify-content: space-between;
+}
+
+.card.large-card.mithqal-card {
+  height: 15vh; 
+}
+
+.mithqal-card .card-title {
+  font-size: var(--mq-title-size, 6vh) !important;
+}
+.mithqal-card .price-value {
+  font-size: var(--mq-price-size, 9vh) !important;
 }
 
 .card.small-card {
@@ -285,7 +298,7 @@ header {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50., -50.);
+  transform: translate(-50%, -50%);
   width: 650px;
   max-width: 95vw;
   background: rgba(20, 24, 30, 0.98);
@@ -327,52 +340,143 @@ header {
   box-shadow: 0 0 5px rgba(223, 183, 108, 0.3);
 }
 
-@media screen and (max-width: 1024px) {
+/* --- استایل اختصاصی موبایل در حالت عمودی (Portrait) --- */
+@media screen and (max-width: 480px) and (orientation: portrait) {
   body {
-    overflow: hidden !important;
-    height: 100vh !important;
+    overflow-y: auto !important; /* فعال کردن اسکرول برای موبایل */
+    height: auto !important;
+    min-height: 100vh;
   }
+
+  /* ۱. حذف باکس ساعت و تاریخ */
+  .time-date-box {
+    display: none !important;
+  }
+
+  /* ۲. بازسازی هدر به حالت دو ستونه (لوگو یک طرف، چراغ‌ها یک طرف) */
+  /* ۲. بازسازی هدر به حالت ستونی و کاملاً وسط‌چین */
   header {
-    grid-template-columns: 1fr auto 1fr !important;
-    gap: 1vw !important;
-    padding: 0 2vw !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 12vh !important;
+    padding: 1.5vh 4vw 0.5vh 4vw !important;
+    gap: 1vh !important; /* ایجاد فاصله عمودی بین لوگو و چراغ‌ها */
   }
-  .time-date-box { 
-    margin-top: 2vh !important;
-    margin-left: 0 !important;
+
+  .center-logo-box {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 0 !important;
+    width: 100% !important;
+  }
+
+  .center-logo-box img {
+    max-height: 7vh !important; /* اندازه متناسب لوگو روی صفحه گوشی */
+    width: auto !important;
+  }
+
+  /* چراغ‌های وضعیت به صورت افقی زیر لوگو ردیف می‌شوند */
+  .indicators-box {
+    display: flex !important;
+    flex-direction: row !important; /* چیدمان افقی به جای عمودی */
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4vw !important; /* فاصله افقی بین سه تا چراغ */
+    width: 100% !important;
+  }
+
+  .ind-item {
+    display: flex !important;
+    flex-direction: row-reverse !important; /* نقطه سمت چپ متن قرار بگیرد */
+    align-items: center !important;
+    gap: 1.5vw !important;
+  }
+
+  .indicators-box span {
+    font-size: 13px !important;
+  }
+
+  .ind-dot {
+    width: 1.2vh !important;
+    height: 1.2vh !important;
+  }
+  /* ۳. بهینه‌سازی لایوت اصلی برای چیدمان زیر هم کارت‌ها */
+  .main-layout {
+    height: auto !important;
+    justify-content: flex-start !important;
+    gap: 2vh !important;
+    padding: 1vh 4vw 4vh 4vw !important;
+  }
+
+  .currency-bar-attached {
+    font-size: 18px !important;
+    margin-bottom: 1vh !important;
+  }
+
+  /* ۴. تبدیل ردیف بالا و پایین به ستون‌های تمام عرض */
+  .top-row, .bottom-row {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    width: 100% !important;
+    gap: 2vh !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* ۵. یکدست کردن ظاهر کارت‌ها در موبایل */
+  .card.large-card, .card.small-card {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 2.5vh 4vw !important;
+    box-sizing: border-box !important;
+  }
+
+  /* تراز کردن عنوان کارت‌ها در وسط */
+  .large-card .card-title, .small-card .card-title {
+    font-size: 26px !important;
+    text-align: center !important;
+    border-right: none !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 0 0 1vh 0 !important;
+    margin-bottom: 2vh !important;
+    width: 100% !important;
     min-width: auto !important;
   }
-  .main-layout {
-    height: 100% !important;
-    justify-content: space-between !important;
-    gap: 1.5vh !important;
+
+  /* ردیف قیمت‌ها در موبایل (خرید و فروش زیر هم یا کنار هم با ابعاد مناسب) */
+  .large-card .card-prices, .small-card .card-prices {
+    display: flex !important;
+    flex-direction: row !important; /* خرید و فروش کنار هم بمونن */
+    justify-content: space-around !important;
+    width: 100% !important;
+    gap: 4vw !important;
   }
-  .bottom-row {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 1vw !important;
+
+  .large-card .price-block, .small-card .price-block {
+    width: 50% !important;
+    min-width: auto !important;
   }
-  .card.large-card {
-    flex-direction: row !important;
-    gap: 2vw !important;
-    padding: 1vh 4vw !important;
+
+  /* کنترل فونت قیمت‌ها بر اساس عرض صفحه موبایل (تا بیرون نزنن) */
+  .large-card .price-value, .small-card .price-value {
+    font-size: 28px !important; /* ابعاد ثابت و خوانا برای موبایل */
   }
-  .large-card .card-title {
-    border-right: 0.5vh solid #dfb76c !important;
-    border-bottom: none !important;
-    padding-right: 2vw !important;
-    padding-bottom: 0 !important;
-    text-align: right !important;
-  }
-  .large-card .card-prices {
-    flex-direction: row !important;
-    gap: 6vw !important;
-  }
-  .large-card .price-value { font-size: var(--lg-price-size, 8vh) !important; }
-  .small-card .price-value { font-size: var(--sm-price-size, 4vh) !important; }
+
+  /* تنظیم دکمه‌های شناور تنظیمات روی موبایل که مزاحم نباشن */
+  #btn-toggle-config { right: 70px !important; top: 15px !important; width: 30px !important; height: 30px !important; }
+  #btn-toggle-fullscreen { right: 20px !important; top: 15px !important; width: 30px !important; height: 30px !important; }
+  
   #inline-settings-panel {
     width: 95% !important;
-    max-height: 95vh;
-    overflow-y: auto;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
   }
 }
 
@@ -411,11 +515,12 @@ header {
       <img src="logo.png" alt="لوگو گالری صادق زاده">
     </div>
 
-    <div class="indicators-box">
-      <div class="ind-item"><span>گیت‌هاب</span><div class="ind-dot" id="github-dot" style="background-color: #2ed573; box-shadow: 0 0 14px #2ed573;"></div></div>
-      <div class="ind-item"><span>سوکت</span><div class="ind-dot" id="server-dot"></div></div>
-      <div class="ind-item"><span>اینترنت</span><div class="ind-dot" id="internet-dot"></div></div>
-    </div>
+<div class="indicators-box">
+  <div class="ind-item"><span>گیت‌هاب</span><div class="ind-dot" id="github-dot" style="background-color: #2ed573; box-shadow: 0 0 14px #2ed573;"></div></div>
+  <div class="ind-item"><span>سوکت</span><div class="ind-dot" id="server-dot" style="background-color: #2ed573; box-shadow: 0 0 14px #2ed573;"></div></div>
+  <div class="ind-item"><span>اینترنت</span><div class="ind-dot" id="internet-dot" style="background-color: #2ed573; box-shadow: 0 0 14px #2ed573;"></div></div>
+</div>
+
   </header>
 
   <div class="main-layout">
@@ -435,7 +540,7 @@ header {
         </div>
       </div>
 
-      <div class="card large-card">
+      <div class="card large-card mithqal-card">
         <div id="mithqal-status-overlay" class="market-status-overlay">
           <div class="market-status-card"><p class="market-status-text">معاملات طلا غیرفعال می‌باشد</p></div>
         </div>
@@ -489,8 +594,13 @@ header {
     <div style="display: flex; gap: 20px; flex-wrap: wrap;">
       <div style="flex: 1 1 250px; display: flex; flex-direction: column; gap: 4px;">
         <div style="font-weight: bold; color: #dfb76c; font-size: 13px; margin-bottom: 4px;">📏 اندازه فونت کارت‌ها:</div>
-        <div class="counter-row-item"><span>طلا/مثقال: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgTitle-minus">-</button><span class="stepper-value-text" id="v-lgTitle">7.0 vh</span><button class="stepper-btn plus" id="btn-lgTitle-plus">+</button></div></div>
-        <div class="counter-row-item"><span>طلا/مثقال: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgPrice-minus">-</button><span class="stepper-value-text" id="v-lgPrice">10.5 vh</span><button class="stepper-btn plus" id="btn-lgPrice-plus">+</button></div></div>
+        <div class="counter-row-item"><span>طلا: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgTitle-minus">-</button><span class="stepper-value-text" id="v-lgTitle">7.0 vh</span><button class="stepper-btn plus" id="btn-lgTitle-plus">+</button></div></div>
+        <div class="counter-row-item"><span>طلا: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgPrice-minus">-</button><span class="stepper-value-text" id="v-lgPrice">10.5 vh</span><button class="stepper-btn plus" id="btn-lgPrice-plus">+</button></div></div>
+        
+        <!-- استپرهای جدید و اختصاصی مثقال جهت جفت شدن با متغیرهای board.js -->
+        <div class="counter-row-item"><span>مثقال: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-mqTitle-minus">-</button><span class="stepper-value-text" id="v-mqTitle">6.0 vh</span><button class="stepper-btn plus" id="btn-mqTitle-plus">+</button></div></div>
+        <div class="counter-row-item"><span>مثقال: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-mqPrice-minus">-</button><span class="stepper-value-text" id="v-mqPrice">9.0 vh</span><button class="stepper-btn plus" id="btn-mqPrice-plus">+</button></div></div>
+        
         <div class="counter-row-item"><span>سکه: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-smTitle-minus">-</button><span class="stepper-value-text" id="v-smTitle">3.2 vh</span><button class="stepper-btn plus" id="btn-smTitle-plus">+</button></div></div>
         <div class="counter-row-item"><span>سکه: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-smPrice-minus">-</button><span class="stepper-value-text" id="v-smPrice">5.0 vh</span><button class="stepper-btn plus" id="btn-smPrice-plus">+</button></div></div>
       </div>
