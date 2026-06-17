@@ -364,7 +364,7 @@ function updateClock() {
     netDot.style.backgroundColor = isOnline ? '#2ed573' : '#ff4757';
     netDot.style.boxShadow = isOnline ? '0 0 14px #2ed573' : '0 0 14px #ff4757'; // اضافه شد
   }
-
+}
 
 function applySizeToUi(key, val) {
   currentSizes[key] = Math.max(1, Math.min(25, parseFloat((currentSizes[key] + val).toFixed(1))));
