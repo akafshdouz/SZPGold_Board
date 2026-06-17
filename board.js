@@ -4,7 +4,9 @@ let serverConnected = false;
 let socket = null;
 let pingInterval = null;
 let githubConnected = true;
+let githubConnected = true;
 let disconnectTimeout = null; // متغیر جدید برای مدیریت تلورانس ۲ ثانیه‌ای قطعی
+
 
 // اضافه شدن مثقال ۱۸ عیار (m_buy و m_sell) به لیست کمیسیون‌ها با مقادیر پیش‌فرض
 let commissions = { 
@@ -53,6 +55,7 @@ function toPersianDigits(str) {
 // کد اصلاح شده تایمر بررسی وضعیت
 setInterval(async () => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
+    // اگر از قبل تایمر تلورانس فعال نشده، آن را روشن کن
     if (!disconnectTimeout) {
       disconnectTimeout = setTimeout(() => {
         serverConnected = false;
@@ -61,10 +64,12 @@ setInterval(async () => {
           sDot.style.backgroundColor = '#ff4757';
           sDot.style.boxShadow = '0 0 14px #ff4757';
         }
+        // اگر متد رندر قیمت‌ها وجود دارد، برای امنیت بیشتر دیتای منقضی شده را پاک کن
         if (typeof renderCalculatedPrices === 'function') renderCalculatedPrices(); 
       }, 2000); // ۲ ثانیه تلورانس
     }
   } else {
+    // اگر سوکت وصل است، اگر تایمر قطعی در جریان بود آن را لغو کن
     if (disconnectTimeout) {
       clearTimeout(disconnectTimeout);
       disconnectTimeout = null;
@@ -111,6 +116,7 @@ function connectPusherSocket() {
   socket.onopen = () => {
     serverConnected = true;
     
+    // لغو آنی تایمر تلورانس قطعی به محض اتصال مجدد موفقیت‌آمیز
     if (disconnectTimeout) {
       clearTimeout(disconnectTimeout);
       disconnectTimeout = null;
@@ -124,21 +130,26 @@ function connectPusherSocket() {
     socket.send(JSON.stringify({"event": "pusher:subscribe", "data": {"auth": "", "channel": "deniz"}}));
   };
 
-  const setupRandomPing = () => {
-    const randomDelay = Math.floor(Math.random() * (110000 - 80000 + 1)) + 80000;
-    pingInterval = setTimeout(() => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({"event": "pusher:ping", "data": {}}));
-        setupRandomPing();
-      }
-    }, randomDelay);
+
+    
+    const setupRandomPing = () => {
+      const randomDelay = Math.floor(Math.random() * (110000 - 80000 + 1)) + 80000;
+      pingInterval = setTimeout(() => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({"event": "pusher:ping", "data": {}}));
+          setupRandomPing();
+        }
+      }, randomDelay);
+    };
+    setupRandomPing();
   };
-  setupRandomPing();
 
   socket.onclose = () => {
+    // تلاش برای اتصال مجدد در پس‌زمینه بلافاصله شروع شود
     if (pingInterval) clearTimeout(pingInterval);
     setTimeout(connectPusherSocket, 3000);
 
+    // به جای قرمز کردن آنی، ۲ ثانیه فرصت بده
     if (!disconnectTimeout) {
       disconnectTimeout = setTimeout(() => {
         serverConnected = false;
@@ -148,22 +159,21 @@ function connectPusherSocket() {
           sDot.style.boxShadow = '0 0 14px #ff4757';
         }
         if (typeof renderCalculatedPrices === 'function') renderCalculatedPrices();
-      }, 2000);
+      }, 2000); // ۲ ثانیه تلورانس برای نوسانات شبکه
     }
   };
+
+
 
   socket.onmessage = (event) => {
     window.lastIncomingEvent = event;
     const packet = JSON.parse(event.data);
     
+    // جایگزین کنید با این:
     if (!firstMessageReceived) {
       firstMessageReceived = true;
-      const shutter = document.getElementById('first-load-shutter');
-      if (shutter) {
-        shutter.style.opacity = '0';
-        setTimeout(() => shutter.remove(), 600);
-      }
     }
+
 
     if (packet.event === "app" || packet.event === "new-panel") {
       const payload = JSON.parse(packet.data || "{}");
@@ -208,7 +218,9 @@ function connectPusherSocket() {
             };
 
             if ((item.title || "").includes("آبشده نقد") && (item.title || "").includes("24")) {
+              // ۱. محاسبه گرم ۱۸ عیار
               updateRaw('g_buy', 'g_sell', p_sell / 4.3318, p_buy / 4.3318, b_stat, s_stat);
+              // ۲. محاسبه مثقال ۱۸ عیار (مستقیماً از قیمت آبشده ۲۴ بدون تقسیم)
               updateRaw('m_buy', 'm_sell', p_sell, p_buy, b_stat, s_stat);
             } else if (title.includes("تمامامامی86")) {
               updateRaw('f_buy', 'f_sell', p_sell, p_buy, b_stat, s_stat);
@@ -234,7 +246,7 @@ function connectPusherSocket() {
       }
     }
   };
-} // کرلی براکت اتمام کل تابع دگرگون شده بالا
+}
 
 function processMarketStatus(goldClosed, coinClosed) {
   const overlays = ['gold-status-overlay', 'mithqal-status-overlay'];
@@ -275,14 +287,23 @@ function renderCalculatedPrices(goldClosed, coinClosed) {
     return formatAndPersianize(rawPrice + commission);
   };
 
+  // گرم ۱۸ عیار
   update('gold_buy', getFinalPrice(rawPrices.g_buy, commissions.g_buy, goldClosed, itemStatuses.g_buy));
   update('gold_sell', getFinalPrice(rawPrices.g_sell, commissions.g_sell, goldClosed, itemStatuses.g_sell));
+
+  // مثقال ۱۸ عیار (جدید)
   update('mithqal_buy', getFinalPrice(rawPrices.m_buy, commissions.m_buy, goldClosed, itemStatuses.m_buy));
   update('mithqal_sell', getFinalPrice(rawPrices.m_sell, commissions.m_sell, goldClosed, itemStatuses.m_sell));
+
+  // سکه تمام امامی
   update('full_buy', getFinalPrice(rawPrices.f_buy, commissions.f_buy, coinClosed, itemStatuses.f_buy));
   update('full_sell', getFinalPrice(rawPrices.f_sell, commissions.f_sell, coinClosed, itemStatuses.f_sell));
+
+  // نیم سکه امامی
   update('half_buy', getFinalPrice(rawPrices.h_buy, commissions.h_buy, coinClosed, itemStatuses.h_buy));
   update('half_sell', getFinalPrice(rawPrices.h_sell, commissions.h_sell, coinClosed, itemStatuses.h_sell));
+
+  // ربع سکه امامی
   update('quarter_buy', getFinalPrice(rawPrices.q_buy, commissions.q_buy, coinClosed, itemStatuses.q_buy));
   update('quarter_sell', getFinalPrice(rawPrices.q_sell, commissions.q_sell, coinClosed, itemStatuses.q_sell));
 
@@ -333,18 +354,19 @@ function updateClock() {
   const dateEl = document.getElementById('live-date');
   const netDot = document.getElementById('internet-dot');
 
-  if (timeEl) timeEl.innerText = `${toPersianDigits(h)}:${toPersianDigits(m)}:${toPersianDigits(s)}`;
+   if (timeEl) timeEl.innerText = `${toPersianDigits(h)}:${toPersianDigits(m)}:${toPersianDigits(s)}`;
   if (dateEl) dateEl.innerText = now.toLocaleDateString('fa-IR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   if (netDot) {
     const isOnline = navigator.onLine;
     netDot.style.backgroundColor = isOnline ? '#2ed573' : '#ff4757';
-    netDot.style.boxShadow = isOnline ? '0 0 14px #2ed573' : '0 0 14px #ff4757';
+    netDot.style.boxShadow = isOnline ? '0 0 14px #2ed573' : '0 0 14px #ff4757'; // اضافه شد
   }
 }
 
 function applySizeToUi(key, val) {
   currentSizes[key] = Math.max(1, Math.min(25, parseFloat((currentSizes[key] + val).toFixed(1))));
   
+  // تبدیل نام‌ها به فرمت استاندارد استایل
   let cssKey = '';
   if (key === 'lgTitle') cssKey = '--lg-title-size';
   if (key === 'lgPrice') cssKey = '--lg-price-size';
@@ -371,8 +393,8 @@ function initSettingsSystem() {
     e.stopPropagation();
     document.getElementById('cfg-g-buy').value = commissions.g_buy;
     document.getElementById('cfg-g-sell').value = commissions.g_sell;
-    document.getElementById('cfg-m-buy').value = commissions.m_buy;
-    document.getElementById('cfg-m-sell').value = commissions.m_sell;
+    document.getElementById('cfg-m-buy').value = commissions.m_buy; // جدید
+    document.getElementById('cfg-m-sell').value = commissions.m_sell; // جدید
     document.getElementById('cfg-f-buy').value = commissions.f_buy;
     document.getElementById('cfg-f-sell').value = commissions.f_sell;
     document.getElementById('cfg-h-buy').value = commissions.h_buy;
@@ -390,8 +412,8 @@ function initSettingsSystem() {
     btnSave.addEventListener('click', () => {
       commissions.g_buy = parseInt(document.getElementById('cfg-g-buy').value) || 0;
       commissions.g_sell = parseInt(document.getElementById('cfg-g-sell').value) || 0;
-      commissions.m_buy = parseInt(document.getElementById('cfg-m-buy').value) || 0;
-      commissions.m_sell = parseInt(document.getElementById('cfg-m-sell').value) || 0;
+      commissions.m_buy = parseInt(document.getElementById('cfg-m-buy').value) || 0; // جدید
+      commissions.m_sell = parseInt(document.getElementById('cfg-m-sell').value) || 0; // جدید
       commissions.f_buy = parseInt(document.getElementById('cfg-f-buy').value) || 0;
       commissions.f_sell = parseInt(document.getElementById('cfg-f-sell').value) || 0;
       commissions.h_buy = parseInt(document.getElementById('cfg-h-buy').value) || 0;
@@ -438,10 +460,14 @@ function initSettingsSystem() {
 
 function loadSavedConfig() {
   const savedComm = localStorage.getItem('szp_commissions');
+  
   if (savedComm) { 
     const parsedComm = JSON.parse(savedComm);
+    
+    // لایه ضد کش کروم با پشتیبانی از فیلدهای جدید مثقال
     if (parsedComm.g_sell === 0 || parsedComm.f_buy === 0 || parsedComm.m_sell === undefined) {
       localStorage.setItem('szp_commissions', JSON.stringify(commissions));
+      console.log("🛠️ کش دیتای صفر کروم پاکسازی و به همراه ساختار مثقال نوسازی شد.");
     } else {
       commissions = parsedComm; 
     }
@@ -460,9 +486,10 @@ function loadSavedConfig() {
 
 loadSavedConfig();
 initSettingsSystem();
-renderCalculatedPrices(false, false);
-connectPusherSocket();
 
+renderCalculatedPrices(false, false);
+
+connectPusherSocket();
 setInterval(calculatePassedTime, 1000);
 setInterval(updateClock, 1000);
 updateClock();
