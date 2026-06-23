@@ -49,6 +49,28 @@ function toPersianDigits(str) {
   return str.replace(/[0-9]/g, d => farsi[parseInt(d)]);
 }
 
+// تابع کمکی جدید برای درج لاگ سیستم با ذکر زمان دقیق وقوع رویداد
+function addSocketLog(text, type = 'info') {
+  const container = document.getElementById('socket-log-container');
+  if (!container) return;
+  const now = new Date();
+  const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+  const p = document.createElement('p');
+  p.className = `log-line ${type}`;
+  p.innerText = `[${timeStr}] ${text}`;
+  container.appendChild(p);
+  container.scrollTop = container.scrollHeight;
+}
+
+// تابع کمکی جدید برای به‌روزرسانی برچسب وضعیت در باکس لاگ
+function updateSocketStateLabel(state, color) {
+  const lbl = document.getElementById('socket-state-lbl');
+  if (lbl) {
+    lbl.innerText = state;
+    lbl.style.backgroundColor = color;
+  }
+}
+
 setInterval(async () => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     serverConnected = false;
@@ -137,6 +159,18 @@ function connectPusherSocket() {
     
     updateSocketStateLabel("CLOSED", "#ff4757");
     
+    // شناسایی دلیل قطعی بر اساس کد استاندارد رویداد کلوز
+    let reason = `Code: ${event.code}. `;
+    if (event.code === 1006) {
+      reason += "Abnormal Closure (Server dropped connection, network lost, or ping timeout).";
+    } else if (event.code === 1000) {
+      reason += "Normal Closure.";
+    } else if (event.code === 1001) {
+      reason += "Going Away (Server is shutting down or client navigated away).";
+    } else {
+      reason += event.reason || "Unknown reason.";
+    }
+    
     addSocketLog(`Socket Connection Disconnected! Reason: ${reason}`, "warning");
     addSocketLog("Scheduling reconnection in 3000ms...", "info");
     
@@ -147,6 +181,10 @@ function connectPusherSocket() {
     window.lastIncomingEvent = event;
     const packet = JSON.parse(event.data);
     
+    // لاگ پونگ دریافتی از سرور پاشر
+    if (packet.event === "pusher:pong") {
+      addSocketLog("Received: pusher:pong (Heartbeat response acknowledged)", "success");
+    }
 
     if (!firstMessageReceived) {
       firstMessageReceived = true;
