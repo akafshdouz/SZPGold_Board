@@ -107,7 +107,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 1.5vh; /* این گپ کلی است */
-  padding: 0vh 1vw 4vh 1vw;
+  padding: 0vh 1vw 2vh 1vw; /* کاهش پدینگ پایین برای جا شدن لاگ مانیتور */
   flex-grow: 1;
   box-sizing: border-box;
   justify-content: space-between; 
@@ -340,6 +340,7 @@ header {
   box-shadow: 0 0 5px rgba(223, 183, 108, 0.3);
 }
 
+
 /* --- استایل اختصاصی موبایل در حالت عمودی (Portrait) --- */
 @media screen and (max-width: 480px) and (orientation: portrait) {
   body {
@@ -353,7 +354,6 @@ header {
     display: none !important;
   }
 
-  /* ۲. بازسازی هدر به حالت دو ستونه (لوگو یک طرف، چراغ‌ها یک طرف) */
   /* ۲. بازسازی هدر به حالت ستونی و کاملاً وسط‌چین */
   header {
     display: flex !important;
@@ -408,7 +408,7 @@ header {
     height: auto !important;
     justify-content: flex-start !important;
     gap: 2vh !important;
-    padding: 1vh 4vw 4vh 4vw !important;
+    padding: 1vh 4vw 2vh 4vw !important;
   }
 
   .currency-bar-attached {
@@ -446,8 +446,6 @@ header {
     border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
     padding: 0 0 1vh 0 !important;
     margin-bottom: 2vh !important;
-    width: 100% !important;
-    min-width: auto !important;
   }
 
   /* ردیف قیمت‌ها در موبایل (خرید و فروش زیر هم یا کنار هم با ابعاد مناسب) */
@@ -596,7 +594,6 @@ header {
         <div class="counter-row-item"><span>طلا: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgTitle-minus">-</button><span class="stepper-value-text" id="v-lgTitle">7.0 vh</span><button class="stepper-btn plus" id="btn-lgTitle-plus">+</button></div></div>
         <div class="counter-row-item"><span>طلا: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-lgPrice-minus">-</button><span class="stepper-value-text" id="v-lgPrice">10.5 vh</span><button class="stepper-btn plus" id="btn-lgPrice-plus">+</button></div></div>
         
-        <!-- استپرهای جدید و اختصاصی مثقال جهت جفت شدن با متغیرهای board.js -->
         <div class="counter-row-item"><span>مثقال: عنوان</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-mqTitle-minus">-</button><span class="stepper-value-text" id="v-mqTitle">6.0 vh</span><button class="stepper-btn plus" id="btn-mqTitle-plus">+</button></div></div>
         <div class="counter-row-item"><span>مثقال: قیمت</span><div class="stepper-control-box"><button class="stepper-btn minus" id="btn-mqPrice-minus">-</button><span class="stepper-value-text" id="v-mqPrice">9.0 vh</span><button class="stepper-btn plus" id="btn-mqPrice-plus">+</button></div></div>
         
