@@ -1,9 +1,15 @@
+// ============================================
+// Railway Server URL - CHANGE THIS WHEN RAILWAY URL CHANGES
+// ============================================
+const SERVER_URL = "szpgoldboardrailway-production.up.railway.app";
+
 let currentSizes = { lgTitle: 7.0, lgPrice: 10.5, mqTitle: 6.0, mqPrice: 9.0, smTitle: 3.2, smPrice: 5.0 };
 let lastUpdateTs = 0;
 let serverConnected = false;
 let socket = null;
 let pingInterval = null;
 let githubConnected = true;
+let initialDataLoaded = false;
 
 // اضافه شدن مثقال ۱۸ عیار (m_buy و m_sell) به لیست کمیسیون‌ها با مقادیر پیش‌فرض
 let commissions = { 
@@ -99,6 +105,78 @@ setInterval(async () => {
   );
   calculatePassedTime();
 }, 5000); 
+
+// ============================================
+// Fetch Initial Data from Railway Server
+// ============================================
+async function fetchInitialData() {
+  try {
+    addSocketLog("Fetching initial data from Railway...", "info");
+    const response = await fetch(`https://${SERVER_URL}/api/last-data`, {
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    addSocketLog("Initial data received from Railway", "success");
+
+    if (data.marketStatus) {
+      processMarketStatus(data.marketStatus.goldClosed, data.marketStatus.coinClosed);
+    }
+    if (data.pricingPacket) {
+      processPricingPacket(data.pricingPacket);
+      if (!firstRealDataReceived) firstRealDataReceived = true;
+      lastUpdateTs = Date.now();
+      const gOverlay = document.getElementById('gold-status-overlay');
+      const cOverlay = document.getElementById('coin-status-overlay-1');
+      renderCalculatedPrices(
+        gOverlay ? gOverlay.style.opacity === "1" : false,
+        cOverlay ? cOverlay.style.opacity === "1" : false
+      );
+    }
+    initialDataLoaded = true;
+    return true;
+  } catch (err) {
+    addSocketLog(`Failed to fetch initial data: ${err.message}`, "error");
+    return false;
+  }
+}
+
+function processPricingPacket(pricing) {
+  const currencies = pricing.currencies || [];
+  let priceChanged = false;
+  currencies.forEach(item => {
+    const title = (item.title || "").replace(/ /g, "");
+    let p_sell = (item.sell_price || 0) * 10000;
+    let p_buy = (item.buy_price || 0) * 10000;
+    if (p_sell === 0 || p_buy === 0) return;
+    let b_stat = item.buy_status !== undefined ? item.buy_status : 1;
+    let s_stat = item.sell_status !== undefined ? item.sell_status : 1;
+    const updateRaw = (keyBuy, keySell, bVal, sVal, currentBuyStatus, currentSellStatus) => {
+      let buyRound = Math.ceil(bVal / 1000.0) * 1000;
+      let sellRound = Math.floor(sVal / 1000.0) * 1000;
+      if (rawPrices[keyBuy] !== buyRound || rawPrices[keySell] !== sellRound ||
+          itemStatuses[keyBuy] !== currentBuyStatus || itemStatuses[keySell] !== currentSellStatus) {
+        rawPrices[keyBuy] = buyRound;
+        rawPrices[keySell] = sellRound;
+        itemStatuses[keyBuy] = currentBuyStatus;
+        itemStatuses[keySell] = currentSellStatus;
+        priceChanged = true;
+      }
+    };
+    if ((item.title || "").includes("آبشده نقد") && (item.title || "").includes("24")) {
+      updateRaw('g_buy', 'g_sell', p_sell / 4.3318, p_buy / 4.3318, b_stat, s_stat);
+      updateRaw('m_buy', 'm_sell', p_sell, p_buy, b_stat, s_stat);
+    } else if (title.includes("تمامامامی86")) {
+      updateRaw('f_buy', 'f_sell', p_sell, p_buy, b_stat, s_stat);
+    } else if (title.includes("نیمسکه86")) {
+      updateRaw('h_buy', 'h_sell', p_sell, p_buy, b_stat, s_stat);
+    } else if (title.includes("ربعسکه86")) {
+      updateRaw('q_buy', 'q_sell', p_sell, p_buy, b_stat, s_stat);
+    }
+  });
+  return priceChanged;
+}
 
 function connectPusherSocket() {
   if (pingInterval) {
@@ -209,55 +287,14 @@ function connectPusherSocket() {
       }
 
       if (p_type === "all_systems_pricing_updated") {
-        addSocketLog(`Received Event: all_systems_pricing_updated (New pricing payload payload)`, "success");
+        addSocketLog(`Received Event: all_systems_pricing_updated (New pricing payload)`, "success");
         const pricing = msg.data?.pricing || [];
         if (pricing.length > 0) {
-          const currencies = pricing[0].currencies || [];
-          let priceChanged = false;
-
-          currencies.forEach(item => {
-            const title = (item.title || "").replace(/ /g, "");
-            let p_sell = (item.sell_price || 0) * 10000;
-            let p_buy = (item.buy_price || 0) * 10000;
-            if (p_sell === 0 || p_buy === 0) return;
-
-            let b_stat = item.buy_status !== undefined ? item.buy_status : 1;
-            let s_stat = item.sell_status !== undefined ? item.sell_status : 1;
-
-            const updateRaw = (keyBuy, keySell, bVal, sVal, currentBuyStatus, currentSellStatus) => {
-              let buyRound = Math.ceil(bVal / 1000.0) * 1000;
-              let sellRound = Math.floor(sVal / 1000.0) * 1000;
-              
-              if (rawPrices[keyBuy] !== buyRound || rawPrices[keySell] !== sellRound || 
-                  itemStatuses[keyBuy] !== currentBuyStatus || itemStatuses[keySell] !== currentSellStatus) {
-                
-                rawPrices[keyBuy] = buyRound;
-                rawPrices[keySell] = sellRound;
-                itemStatuses[keyBuy] = currentBuyStatus;
-                itemStatuses[keySell] = currentSellStatus;
-                priceChanged = true;
-              }
-            };
-
-            if ((item.title || "").includes("آبشده نقد") && (item.title || "").includes("24")) {
-              // ۱. محاسبه گرم ۱۸ عیار
-              updateRaw('g_buy', 'g_sell', p_sell / 4.3318, p_buy / 4.3318, b_stat, s_stat);
-              // ۲. محاسبه مثقال ۱۸ عیار (مستقیماً از قیمت آبشده ۲۴ بدون تقسیم)
-              updateRaw('m_buy', 'm_sell', p_sell, p_buy, b_stat, s_stat);
-            } else if (title.includes("تمامامامی86")) {
-              updateRaw('f_buy', 'f_sell', p_sell, p_buy, b_stat, s_stat);
-            } else if (title.includes("نیمسکه86")) {
-              updateRaw('h_buy', 'h_sell', p_sell, p_buy, b_stat, s_stat);
-            } else if (title.includes("ربعسکه86")) {
-              updateRaw('q_buy', 'q_sell', p_sell, p_buy, b_stat, s_stat);
-            }
-          });
-
-          if (priceChanged) {
+          const priceChanged = processPricingPacket(pricing[0]);
+          if (priceChanged || !firstRealDataReceived) {
             if (!firstRealDataReceived) firstRealDataReceived = true;
             lastUpdateTs = Date.now();
             calculatePassedTime();
-            
             const gOverlay = document.getElementById('gold-status-overlay');
             const cOverlay = document.getElementById('coin-status-overlay-1');
             const goldClosed = gOverlay ? gOverlay.style.opacity === "1" : false;
@@ -509,7 +546,13 @@ initSettingsSystem();
 
 renderCalculatedPrices(false, false);
 
-connectPusherSocket();
+// First fetch initial data from Railway, then connect WebSocket
+(async () => {
+  await fetchInitialData();
+  connectPusherSocket();
+})();
+
 setInterval(calculatePassedTime, 1000);
 setInterval(updateClock, 1000);
 updateClock();
+
